@@ -1,0 +1,372 @@
+{
+  "name": "Crypto Wiki: New Post",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5016146c-e8cd-4dbc-8f07-6e89212678ed",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-1648, 0]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "topic",
+              "value": "What is Solana"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cba8ac09-afe2-49c0-8341-b29249b7af3b",
+      "name": "Set Post Topic",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [-1440, 0]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "oktayshakirov",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "crypto-wiki-automation",
+          "mode": "name"
+        },
+        "filePath": "content-database.json",
+        "asBinaryProperty": false,
+        "additionalParameters": {}
+      },
+      "id": "19f31974-9b3e-43e8-8471-a6043030b4e4",
+      "name": "Get content-database.json",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [-1248, -112],
+      "webhookId": "8af5d58b-af86-47d8-971b-dbf4b40302d7",
+      "credentials": {
+        "githubApi": {
+          "id": "PGPD26vSgTS2AeM8",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "oktayshakirov",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "crypto-wiki-automation",
+          "mode": "name"
+        },
+        "filePath": "post_guidelines.md",
+        "asBinaryProperty": false,
+        "additionalParameters": {}
+      },
+      "id": "70aa2361-99e8-404d-8fe0-560be34410e5",
+      "name": "Get Guidelines",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [-1248, 96],
+      "webhookId": "868cb777-82aa-4244-9260-5987f185246b",
+      "credentials": {
+        "githubApi": {
+          "id": "PGPD26vSgTS2AeM8",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "wait"
+      },
+      "id": "7a4a8cac-c584-48b7-aa1d-5688788dbfa6",
+      "name": "Merge DB + Guidelines",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [-1040, 0]
+    },
+    {
+      "parameters": {
+        "functionCode": "function decodeFile(nodeName, parseJson=false) {\n  const node = $node[nodeName].json;\n  if (!node.content) throw new Error(`${nodeName} has no json.content`);\n  const buff = Buffer.from(node.content, 'base64');\n  const text = buff.toString('utf-8');\n  return parseJson ? JSON.parse(text) : text;\n}\n\nconst db = decodeFile(\"Get content-database.json\", true);\nconst guidelinesText = decodeFile(\"Get Guidelines\", false);\nconst { topic } = $node[\"Set Post Topic\"].json;\n\n// Convert database to compact format: key|slug|title\n// This reduces token usage by ~80% while preserving all necessary data\nfunction formatDbCompact(dbObj, category) {\n  return Object.entries(dbObj || {})\n    .map(([key, val]) => {\n      // Prepend category prefix to slug (e.g., /crypto-ogs/, /posts/, /exchanges/, /tools/)\n      const fullSlug = `/${category}/${val.slug}`;\n      return [key, fullSlug, val.title].join('|');\n    })\n    .join('\\n');\n}\n\nconst compactOgs = formatDbCompact(db.crypto_ogs, 'crypto-ogs');\nconst compactPosts = formatDbCompact(db.posts, 'posts');\nconst compactExchanges = formatDbCompact(db.exchanges, 'exchanges');\nconst compactTools = formatDbCompact(db.tools, 'tools');\n\nreturn [{\n  json: { \n    db,              // Full database for backend processing\n    guidelinesText,\n    topic, \n    compactOgs,      // Compact format for AI (80% fewer tokens)\n    compactPosts,\n    compactExchanges,\n    compactTools\n  }\n}];"
+      },
+      "id": "3bad7d86-8ab8-40d9-8ffd-6d80c4b8d254",
+      "name": "Parse & Prepare Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [-848, 0]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "chatModel": "=gpt-5",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "=\"You are an expert crypto writer creating comprehensive, SEO-optimized educational posts for Crypto Wiki.\n\nCRITICAL WORKFLOW REQUIREMENTS:\n- Follow ALL provided guidelines EXACTLY\n- Write ONLY the Markdown body (no frontmatter - frontmatter is generated separately)\n- Include metadata JSON at the end (tags, description, categories, crypto_ogs, exchanges)\n\nCRITICAL FORMATTING RULES:\n- ALWAYS capitalize crypto-ogs and exchanges in content (e.g., 'Satoshi Nakamoto', 'Vitalik Buterin', 'Coinbase', 'Kraken', 'Uniswap')\n- NEVER include a references section, bibliography, or 'Further reading' section at the end\""
+            },
+            {
+              "content": "=\"Post Topic: {{$json.topic}}  \n\nINTERNAL LINK DATABASES (format: key|slug|title):  \n\nCRYPTO_OGS:\n{{$json.compactOgs}}\n\nPOSTS:\n{{$json.compactPosts}}\n\nEXCHANGES:\n{{$json.compactExchanges}}\n\nTOOLS:\n{{$json.compactTools}}\n\n=== GUIDELINES ===  \n{{$json.guidelinesText}}\n\nAfter writing the post, provide the JSON object as specified in the guidelines.\""
+            }
+          ]
+        },
+        "simplifyOutput": false,
+        "options": {},
+        "requestOptions": {}
+      },
+      "id": "4876ac80-88a9-4750-932d-41456873f7ab",
+      "name": "OpenAI: Generate Body",
+      "type": "n8n-nodes-base.openAi",
+      "position": [-624, 0],
+      "typeVersion": 1.1,
+      "credentials": {
+        "openAiApi": {
+          "id": "V3M27dVzBH2bYknk",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const meta = $node[\"Parse & Prepare Data\"].json;\nconst ai = $node[\"OpenAI: Generate Body\"].json;\n\n// Generate slug from topic\nlet slug = meta.topic.toLowerCase()\n  .replace(/^what is /i, '')\n  .replace(/^how to /i, '')\n  .replace(/^understanding /i, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/(^-|-$)/g, '');\n\nconst isoDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format\nconst order = meta.db.next_orders.posts;\n\n// Extract metadata from AI response\nlet tags = [];\nlet description = '';\nlet categories = [];\nlet cryptoOgs = [];\nlet exchanges = [];\nlet jsonFound = false;\n\ntry {\n  const aiContent = ai.choices?.[0]?.message?.content || ai.content || '';\n  console.log('AI Response length:', aiContent.length);\n  \n  // Look for JSON object in the response\n  const jsonMatch = aiContent.match(/\\{[\\s\\S]*?\"tags\"[\\s\\S]*?\\}/g);\n  if (jsonMatch && jsonMatch.length > 0) {\n    console.log('Found JSON match:', jsonMatch[0].substring(0, 200));\n    \n    // Clean up the JSON string before parsing\n    let jsonString = jsonMatch[0];\n    \n    // Fix common JSON issues\n    jsonString = jsonString\n      .replace(/,(\\s*[}\\]])/g, '$1') // Remove trailing commas\n      .replace(/([^,{}\\s])(\\s*[}\\]])/g, '$1$2') // Ensure proper comma placement\n      .replace(/([^,{}\\s])(\\s*\"[a-zA-Z_][a-zA-Z0-9_]*\"\\s*:)/g, '$1,$2'); // Add missing commas before properties\n    \n    try {\n      const aiData = JSON.parse(jsonString);\n      \n      // Extract all metadata\n      if (aiData.tags && Array.isArray(aiData.tags)) {\n        tags = aiData.tags;\n        console.log('Extracted tags:', tags.length);\n      }\n      \n      if (aiData.description) {\n        description = aiData.description;\n        console.log('Extracted description:', description);\n      }\n      \n      if (aiData.categories && Array.isArray(aiData.categories)) {\n        categories = aiData.categories;\n        console.log('Extracted categories:', categories);\n      }\n      \n      if (aiData.crypto_ogs && Array.isArray(aiData.crypto_ogs)) {\n        cryptoOgs = aiData.crypto_ogs;\n        console.log('Extracted crypto_ogs:', cryptoOgs);\n      }\n      \n      if (aiData.exchanges && Array.isArray(aiData.exchanges)) {\n        exchanges = aiData.exchanges;\n        console.log('Extracted exchanges:', exchanges);\n      }\n      \n      jsonFound = true;\n    } catch (jsonError) {\n      console.log('JSON parsing failed, trying manual extraction:', jsonError.message);\n      \n      // Manual extraction as fallback\n      const tagsMatch = aiContent.match(/\"tags\"\\s*:\\s*\\[([^\\]]+)\\]/);\n      const descMatch = aiContent.match(/\"description\"\\s*:\\s*\"([^\"]+)\"/);\n      const catsMatch = aiContent.match(/\"categories\"\\s*:\\s*\\[([^\\]]+)\\]/);\n      const ogsMatch = aiContent.match(/\"crypto_ogs\"\\s*:\\s*\\[([^\\]]+)\\]/);\n      const exMatch = aiContent.match(/\"exchanges\"\\s*:\\s*\\[([^\\]]+)\\]/);\n      \n      if (tagsMatch) {\n        tags = tagsMatch[1].split(',').map(t => t.trim().replace(/[\"']/g, ''));\n      }\n      \n      if (descMatch) {\n        description = descMatch[1];\n      }\n      \n      if (catsMatch) {\n        categories = catsMatch[1].split(',').map(c => c.trim().replace(/[\"']/g, ''));\n      }\n      \n      if (ogsMatch) {\n        cryptoOgs = ogsMatch[1].split(',').map(o => o.trim().replace(/[\"']/g, ''));\n      }\n      \n      if (exMatch) {\n        exchanges = exMatch[1].split(',').map(e => e.trim().replace(/[\"']/g, ''));\n      }\n      \n      if (tags.length > 0 || description) {\n        jsonFound = true;\n        console.log('Manual extraction successful');\n      }\n    }\n  }\n  \n  // Validate we got the required data\n  if (!jsonFound || !description) {\n    throw new Error('AI did not return required JSON with tags and description. Manual review needed.');\n  }\n  \n  if (tags.length < 8) {\n    console.log(`Warning: Only ${tags.length} tags found. Minimum 8 recommended.`);\n  }\n  \n  if (categories.length === 0) {\n    console.log('Warning: No categories found. Using default.');\n    categories = ['Beginners'];\n  }\n  \n  // Validate categories against allowed list\n  const allowedCategories = ['Investing', 'Beginners', 'Regulation', 'Bitcoin', 'Adoption', 'Blockchain', 'Technology', 'Web3', 'Predictions', 'Security', 'Politics', 'Sustainability', 'Gaming', 'Nfts', 'Ai'];\n  const invalidCategories = categories.filter(cat => !allowedCategories.includes(cat));\n  if (invalidCategories.length > 0) {\n    console.log(`Warning: Invalid categories found: ${invalidCategories.join(', ')}. Removing them.`);\n    categories = categories.filter(cat => allowedCategories.includes(cat));\n  }\n  if (categories.length === 0) {\n    console.log('No valid categories remaining. Using default.');\n    categories = ['Beginners'];\n  }\n  \n} catch (e) {\n  console.log('ERROR parsing AI response:', e.message);\n  throw new Error(`Failed to extract data from AI response: ${e.message}. Please check AI output format.`);\n}\n\n// Build frontmatter\nconst frontmatterLines = [\n  '---',\n  `title: \"${meta.topic}\"`,\n  `description: \"${description}\"`,\n  `date: ${isoDate}`,\n  `image: \"/images/posts/${slug}.png\"`,\n  `categories: [${categories.map(c => `\"${c}\"`).join(', ')}]`\n];\n\n// Add optional crypto-ogs\nif (cryptoOgs.length > 0) {\n  frontmatterLines.push(`crypto-ogs: [${cryptoOgs.map(og => `\"${og}\"`).join(', ')}]`);\n}\n\n// Add optional exchanges\nif (exchanges.length > 0) {\n  frontmatterLines.push(`exchanges: [${exchanges.map(ex => `\"${ex}\"`).join(', ')}]`);\n}\n\nfrontmatterLines.push('authors: [\"Crypto Wiki Team\"]');\nfrontmatterLines.push(`tags:`);\nfrontmatterLines.push('  [');\ntags.forEach((tag, index) => {\n  const comma = index < tags.length - 1 ? ',' : '';\n  frontmatterLines.push(`    \"${tag}\"${comma}`);\n});\nfrontmatterLines.push('  ]');\nfrontmatterLines.push('draft: false');\nfrontmatterLines.push('---');\n\nconst frontmatter = frontmatterLines.join('\\n');\n\n// Extract just the markdown body (remove any JSON at the end)\nlet body = ai.choices?.[0]?.message?.content || ai.content || '';\n// Remove JSON object if it exists at the end\nbody = body.replace(/\\n\\{[\\s\\S]*\"tags\"[\\s\\S]*\\}$/, '').trim();\n\nreturn [{\n  json: {\n    mdx: `${frontmatter}\\n\\n${body}`,\n    slug,\n    topic: meta.topic,\n    isoDate,\n    order,\n    db: meta.db,\n    tags,\n    description,\n    categories,\n    cryptoOgs,\n    exchanges\n  }\n}];"
+      },
+      "id": "52def2b7-c7ee-40de-89a7-23703aad370c",
+      "name": "Build Frontmatter + MDX",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [-432, 0]
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $json;\nconst filePath = `${data.slug}.mdx`;\nconst commitMessage = `New post: ${data.topic}`;\n\nreturn [{\n  json: {\n    ...data,\n    filePath,\n    commitMessage\n  }\n}];"
+      },
+      "id": "6eb633c8-c9e4-4b92-bad7-349506e15f19",
+      "name": "Prepare File Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [-224, 0]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "oktayshakirov",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "crypto-wiki-automation",
+          "mode": "name"
+        },
+        "filePath": "=content/posts/{{$json.filePath}}",
+        "fileContent": "={{$json.mdx}}",
+        "commitMessage": "={{$json.commitMessage}}"
+      },
+      "id": "08ac5772-b618-4793-b8b3-18c60f39c44e",
+      "name": "Write New Post MDX",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [-32, 0],
+      "webhookId": "0659f16d-29c4-4df0-b762-51f61500a898",
+      "credentials": {
+        "githubApi": {
+          "id": "PGPD26vSgTS2AeM8",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validate file write was successful\nconst fileResult = $input.first().json;\nif (!fileResult || fileResult.error) {\n  throw new Error(`File write failed: ${fileResult?.error || 'Unknown error'}`);\n}\n\n// Get post data from Build Frontmatter + MDX node\nconst postData = $node[\"Build Frontmatter + MDX\"].json;\nif (!postData || !postData.topic || !postData.slug) {\n  throw new Error('Post data not found or incomplete');\n}\n\n// Get and validate database data\nconst dbData = postData.db;\nif (!dbData) {\n  throw new Error('Database data not found');\n}\n\n// Create updated database with proper structure\nconst updatedDb = {\n  ...dbData,\n  posts: { ...(dbData.posts || {}) },\n  next_orders: { ...(dbData.next_orders || { posts: 1 }) }\n};\n\n// Create post key (lowercase, replace spaces with dots)\nconst postKey = postData.slug.replace(/-/g, '.');\n\n// Check if post already exists\nif (updatedDb.posts[postKey]) {\n  throw new Error(`Post '${postData.topic}' already exists in database`);\n}\n\n// Add new post to database (slug without /posts/ prefix)\nupdatedDb.posts[postKey] = {\n  slug: postData.slug,\n  title: postData.topic\n};\n\n// Increment next order counter\nupdatedDb.next_orders.posts = (updatedDb.next_orders.posts || 0) + 1;\n\n// Return success with updated database\nreturn [{ \n  json: { \n    db: updatedDb, \n    fileSuccess: true, \n    dbSuccess: true,\n    postAdded: postKey,\n    topic: postData.topic\n  } \n}];"
+      },
+      "id": "1b700528-0688-48f2-a7aa-ca0a81bfb763",
+      "name": "Update Database",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [160, 0]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "oktayshakirov",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "crypto-wiki-automation",
+          "mode": "name"
+        },
+        "filePath": "content-database.json",
+        "fileContent": "={{JSON.stringify($json.db, null, 2)}}",
+        "commitMessage": "=Update posts DB after adding {{$json.topic || 'new post'}}"
+      },
+      "id": "a638ac05-d695-424a-a41e-3d7198e4e93f",
+      "name": "Write Updated DB JSON",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [368, 0],
+      "webhookId": "c216a840-93e7-41f1-99d2-215bce62e058",
+      "credentials": {
+        "githubApi": {
+          "id": "PGPD26vSgTS2AeM8",
+          "name": "GitHub account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Post Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Post Topic": {
+      "main": [
+        [
+          {
+            "node": "Get content-database.json",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Guidelines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get content-database.json": {
+      "main": [
+        [
+          {
+            "node": "Merge DB + Guidelines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Guidelines": {
+      "main": [
+        [
+          {
+            "node": "Merge DB + Guidelines",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge DB + Guidelines": {
+      "main": [
+        [
+          {
+            "node": "Parse & Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "OpenAI: Generate Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI: Generate Body": {
+      "main": [
+        [
+          {
+            "node": "Build Frontmatter + MDX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Frontmatter + MDX": {
+      "main": [
+        [
+          {
+            "node": "Prepare File Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare File Data": {
+      "main": [
+        [
+          {
+            "node": "Write New Post MDX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write New Post MDX": {
+      "main": [
+        [
+          {
+            "node": "Update Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Database": {
+      "main": [
+        [
+          {
+            "node": "Write Updated DB JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "268ec9ca-e70b-4b83-ac8c-0306eb2ea227",
+  "meta": {
+    "instanceId": "002b5e092f04f4d75aa57fd214532db5fa3d65fe608d265bda2ed541d575f595"
+  },
+  "id": "pEfGTfVz5FdtLTGM",
+  "tags": []
+}

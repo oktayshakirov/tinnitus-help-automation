@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "98744648-54ad-474b-8c79-ea90b86e1b6e",
+      "id": "6b4682dd-3e07-467c-b8d0-5b2586f65936",
       "name": "Manual Trigger (Social Share)",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -2096,
-        512
+        -1888,
+        48
       ]
     },
     {
@@ -18,19 +18,19 @@
           "string": [
             {
               "name": "slug",
-              "value": "what-is-tinnitus"
+              "value": "managing-tinnitus"
             }
           ]
         },
         "options": {}
       },
-      "id": "2d55b2a3-610e-4623-8eaa-204b91ea7dbb",
+      "id": "6b717548-e6d0-4efe-8cc7-8ac3b4c6fb53",
       "name": "Set Slug",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
       "position": [
-        -1952,
-        512
+        -1744,
+        48
       ]
     },
     {
@@ -51,13 +51,13 @@
         "asBinaryProperty": false,
         "additionalParameters": {}
       },
-      "id": "a18803b5-0fbe-4488-bd9b-2a104c86a4d2",
+      "id": "73d58d4e-ac4c-4905-afb7-152fb4141a82",
       "name": "Get Post MDX",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
       "position": [
-        -1808,
-        512
+        -1600,
+        48
       ],
       "webhookId": "91df1748-e0c3-4c14-8bc7-058c2545e03d",
       "credentials": {
@@ -71,13 +71,13 @@
       "parameters": {
         "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
       },
-      "id": "35229ac3-c35c-415f-aac0-7f9474656c1a",
+      "id": "7ecce0d3-de7b-460f-80fe-9730247e5f2f",
       "name": "Parse Frontmatter",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        -1648,
-        512
+        -1440,
+        48
       ]
     },
     {
@@ -106,17 +106,17 @@
           ]
         }
       },
-      "id": "f9e4b882-d72b-4e69-a120-b6a5937e554d",
+      "id": "9dfbf799-5e36-4465-8ce0-9f930287b00f",
       "name": "Create an image",
       "type": "n8n-nodes-base.apiTemplateIo",
       "typeVersion": 1,
       "position": [
-        -1504,
-        512
+        -1296,
+        48
       ],
       "credentials": {
         "apiTemplateIoApi": {
-          "id": "VtZS5IMyzrgGCOmS",
+          "id": "0SUDArAaMkmmEJVN",
           "name": "APITemplate.io (TinnitusHelp)"
         }
       }
@@ -132,13 +132,13 @@
           }
         }
       },
-      "id": "92cab31a-ac98-4850-ac36-7e833ce7deee",
+      "id": "ed2ce021-3c4f-4fdd-bc6c-0d12dd06bcad",
       "name": "Download APITemplate Image",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1344,
-        512
+        -1136,
+        48
       ]
     },
     {
@@ -158,13 +158,13 @@
         "binaryData": true,
         "commitMessage": "new automated image"
       },
-      "id": "6e62b1c9-d34e-4645-bf71-976e469df604",
+      "id": "862738a4-bdde-48a8-aedd-419bf31a96bc",
       "name": "Upload to GitHub",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
       "position": [
-        -1168,
-        512
+        -960,
+        48
       ],
       "webhookId": "8c7ce9b9-6fc0-49de-944a-19a21dda4d06",
       "credentials": {
@@ -176,15 +176,15 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://tinnitushelp.me/blog\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  Read more: 👉 {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = variant.replace(\"{{link}}\", \"Read more at tinnitushelp.me\");\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/${slug}.png`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
+        "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://tinnitushelp.me/blog\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  Read more: 👉 {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = variant.replace(\"{{link}}\", \"👉 Read more at tinnitushelp.me\");\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/${slug}.png`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
       },
-      "id": "85da35f0-bf45-4856-ba3c-e678ec8340b5",
+      "id": "6985e489-b4f5-4855-b8ee-7b19e23947cf",
       "name": "Format Social Post",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        -1008,
-        512
+        -800,
+        48
       ]
     },
     {
@@ -198,7 +198,7 @@
             "parameter": [
               {
                 "name": "image_url",
-                "value": "=https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/what-is-tinnitus.png"
+                "value": "={{$json.imageUrl}}"
               },
               {
                 "name": "caption",
@@ -208,17 +208,17 @@
           }
         }
       },
-      "id": "66437c9c-f87f-4fb2-89a5-fa33e15c0962",
+      "id": "4624caab-a8d7-4041-9e6c-6efb50a73be6",
       "name": "Instagram Create Media",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        -784,
-        512
+        -576,
+        48
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "Ydx1TfHeHlMX2ILQ",
+          "id": "ltfxXBWtUWu9wRg3",
           "name": "Facebook Graph (TinnitusHelp)"
         }
       }
@@ -244,17 +244,17 @@
           }
         }
       },
-      "id": "64bac331-8995-4a92-859d-1b6a9236671c",
+      "id": "b69aa150-11e8-4eac-950e-8ca78c50fa9f",
       "name": "Facebook Post",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        -768,
-        112
+        -560,
+        -368
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "Ydx1TfHeHlMX2ILQ",
+          "id": "ltfxXBWtUWu9wRg3",
           "name": "Facebook Graph (TinnitusHelp)"
         }
       }
@@ -276,17 +276,17 @@
           }
         }
       },
-      "id": "ac9574db-4f8e-4e17-953b-1be554044289",
+      "id": "2dfbf5a1-3a10-4d0c-8d8b-c015185078eb",
       "name": "Instagram Post",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        -560,
-        512
+        -352,
+        48
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "Ydx1TfHeHlMX2ILQ",
+          "id": "ltfxXBWtUWu9wRg3",
           "name": "Facebook Graph (TinnitusHelp)"
         }
       }
@@ -303,16 +303,16 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -656,
-        704
+        -448,
+        240
       ],
-      "id": "e5961b8a-a0aa-43df-a111-bf293f9e5016",
+      "id": "e9433cae-b2d8-493b-a0ec-59dfc65c6de9",
       "name": "Telegram Post",
       "webhookId": "64019144-1c77-4b4f-93a0-a9a579593793",
       "credentials": {
         "telegramApi": {
-          "id": "wvvr0VqigaV0y9Pc",
-          "name": "Telegram (TinnitusHelp)"
+          "id": "4rLRmLOvcIlidonP",
+          "name": "Telegram (TinniusHelp)"
         }
       }
     },
@@ -338,10 +338,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -736,
-        320
+        -528,
+        -160
       ],
-      "id": "f52ee491-05f6-46e2-a7f2-eeab695ff39b",
+      "id": "f0353a55-1f29-4b16-a42a-8f0121262299",
       "name": "Upload Media to Twitter",
       "credentials": {
         "twitterOAuth2Api": {
@@ -349,7 +349,7 @@
           "name": "X OAuth 2.0 (CryptoWiki)"
         },
         "twitterOAuth1Api": {
-          "id": "OLqoGK3w0RSKKDuB",
+          "id": "UE74TiXdMhp0RYDI",
           "name": "X OAuth 1.0 (TinnitusHelp)"
         }
       }
@@ -361,17 +361,17 @@
           "attachments": "={{ $json.media_id_string }}"
         }
       },
-      "id": "da11b249-2c6c-4ccc-b004-067b02223e1d",
+      "id": "8ef4f2a3-d674-40a5-a5cf-03836697b7c9",
       "name": "Create Tweet1",
       "type": "n8n-nodes-base.twitter",
       "typeVersion": 2,
       "position": [
-        -544,
-        256
+        -336,
+        -224
       ],
       "credentials": {
         "twitterOAuth2Api": {
-          "id": "glLGJiFIa282EI65",
+          "id": "WEJEsTH7bk3jpU4n",
           "name": "X OAuth 2.0 (TinnitusHelp)"
         }
       }
@@ -506,14 +506,12 @@
     }
   },
   "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "versionId": "7416ce59-d9aa-475a-9d5e-d4816a393a45",
+  "settings": {},
+  "versionId": "9a6d9a98-b07d-46e8-b0e1-18d01898a893",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "002b5e092f04f4d75aa57fd214532db5fa3d65fe608d265bda2ed541d575f595"
   },
-  "id": "V3Ef1FFVFdyinxka",
+  "id": "jtUStrxCt23FGNDk",
   "tags": []
 }

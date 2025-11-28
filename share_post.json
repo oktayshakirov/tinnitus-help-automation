@@ -18,7 +18,7 @@
           "string": [
             {
               "name": "slug",
-              "value": "how-to-buy-your-first-crypto"
+              "value": "what-is-tinnitus"
             }
           ]
         },
@@ -69,7 +69,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://www.thecrypto.wiki${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://thecrypto.wiki/posts/${slug}`\n}}];"
+        "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
       },
       "id": "35229ac3-c35c-415f-aac0-7f9474656c1a",
       "name": "Parse Frontmatter",
@@ -176,7 +176,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://thecrypto.wiki/posts\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  Read more: 👉 {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = variant.replace(\"{{link}}\", \"Read more at thecrypto.wiki\");\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/blog/${slug}.png`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
+        "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://tinnitushelp.me/blog\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  Read more: 👉 {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = variant.replace(\"{{link}}\", \"Read more at tinnitushelp.me\");\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/${slug}.png`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
       },
       "id": "85da35f0-bf45-4856-ba3c-e678ec8340b5",
       "name": "Format Social Post",
@@ -191,14 +191,14 @@
       "parameters": {
         "httpRequestMethod": "POST",
         "graphApiVersion": "v23.0",
-        "node": "17841477190733041",
+        "node": "17841477062009382",
         "edge": "media",
         "options": {
           "queryParameters": {
             "parameter": [
               {
                 "name": "image_url",
-                "value": "={{$json.imageUrl}}"
+                "value": "=https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/what-is-tinnitus.png"
               },
               {
                 "name": "caption",
@@ -218,8 +218,8 @@
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "CGGakNGphccGvIDc",
-          "name": "Facebook Graph account"
+          "id": "Ydx1TfHeHlMX2ILQ",
+          "name": "Facebook Graph (TinnitusHelp)"
         }
       }
     },
@@ -254,8 +254,8 @@
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "CGGakNGphccGvIDc",
-          "name": "Facebook Graph account"
+          "id": "Ydx1TfHeHlMX2ILQ",
+          "name": "Facebook Graph (TinnitusHelp)"
         }
       }
     },
@@ -263,7 +263,7 @@
       "parameters": {
         "httpRequestMethod": "POST",
         "graphApiVersion": "v23.0",
-        "node": "17841477190733041",
+        "node": "17841477062009382",
         "edge": "media_publish",
         "options": {
           "queryParameters": {
@@ -286,16 +286,16 @@
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "CGGakNGphccGvIDc",
-          "name": "Facebook Graph account"
+          "id": "Ydx1TfHeHlMX2ILQ",
+          "name": "Facebook Graph (TinnitusHelp)"
         }
       }
     },
     {
       "parameters": {
         "operation": "sendPhoto",
-        "chatId": "@thecryptowiki",
-        "file": "={{$json.imageUrl}}",
+        "chatId": "@tinnitushelpme",
+        "file": "=https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/what-is-tinnitus.png",
         "additionalFields": {
           "caption": "={{$json.twitter}}"
         }
@@ -311,8 +311,8 @@
       "webhookId": "64019144-1c77-4b4f-93a0-a9a579593793",
       "credentials": {
         "telegramApi": {
-          "id": "uVLOnoo4RVLvHhIs",
-          "name": "Telegram (CryptoWiki)"
+          "id": "wvvr0VqigaV0y9Pc",
+          "name": "Telegram (TinnitusHelp)"
         }
       }
     },
@@ -346,11 +346,11 @@
       "credentials": {
         "twitterOAuth2Api": {
           "id": "QT8bLYGAdrhMNYdJ",
-          "name": "X account (CryptoWiki)"
+          "name": "X OAuth 2.0 (CryptoWiki)"
         },
         "twitterOAuth1Api": {
-          "id": "gG2OhuzCvK3obxs2",
-          "name": "X OAuth account (CryptoWiki)"
+          "id": "OLqoGK3w0RSKKDuB",
+          "name": "X OAuth 1.0 (TinnitusHelp)"
         }
       }
     },
@@ -371,8 +371,8 @@
       ],
       "credentials": {
         "twitterOAuth2Api": {
-          "id": "QT8bLYGAdrhMNYdJ",
-          "name": "X account (CryptoWiki)"
+          "id": "glLGJiFIa282EI65",
+          "name": "X OAuth 2.0 (TinnitusHelp)"
         }
       }
     }
@@ -509,7 +509,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8efa1c17-7801-46de-a0ba-019c30b36a4e",
+  "versionId": "7416ce59-d9aa-475a-9d5e-d4816a393a45",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "002b5e092f04f4d75aa57fd214532db5fa3d65fe608d265bda2ed541d575f595"

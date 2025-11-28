@@ -1,9 +1,9 @@
 {
-  "name": "Crypto Wiki: Share Post",
+  "name": "Tinnitus Help: Share Post",
   "nodes": [
     {
       "parameters": {},
-      "id": "8d77b9a1-3170-4371-afa2-814ffd61566e",
+      "id": "98744648-54ad-474b-8c79-ea90b86e1b6e",
       "name": "Manual Trigger (Social Share)",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -24,7 +24,7 @@
         },
         "options": {}
       },
-      "id": "11468640-590a-4685-82d4-621c74d20379",
+      "id": "2d55b2a3-610e-4623-8eaa-204b91ea7dbb",
       "name": "Set Slug",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
@@ -44,14 +44,14 @@
         },
         "repository": {
           "__rl": true,
-          "value": "crypto-wiki",
+          "value": "tinnitus-blog",
           "mode": "name"
         },
         "filePath": "=content/posts/{{$json.slug}}.mdx",
         "asBinaryProperty": false,
         "additionalParameters": {}
       },
-      "id": "90d9d134-9399-4891-9d3c-229f9ba77d9a",
+      "id": "a18803b5-0fbe-4488-bd9b-2a104c86a4d2",
       "name": "Get Post MDX",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
@@ -59,7 +59,7 @@
         -1808,
         512
       ],
-      "webhookId": "9378457c-322a-4fbe-862f-fa2358a685cb",
+      "webhookId": "91df1748-e0c3-4c14-8bc7-058c2545e03d",
       "credentials": {
         "githubApi": {
           "id": "PGPD26vSgTS2AeM8",
@@ -71,7 +71,7 @@
       "parameters": {
         "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://www.thecrypto.wiki${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://thecrypto.wiki/posts/${slug}`\n}}];"
       },
-      "id": "ffad18f6-b5f5-4101-b0d3-6d1c8299a44f",
+      "id": "35229ac3-c35c-415f-aac0-7f9474656c1a",
       "name": "Parse Frontmatter",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
@@ -82,7 +82,7 @@
     },
     {
       "parameters": {
-        "imageTemplateId": "fc877b23efe45548",
+        "imageTemplateId": "5d677b23dcfff87a",
         "overridesUi": {
           "overrideValues": [
             {
@@ -106,7 +106,7 @@
           ]
         }
       },
-      "id": "66608d1a-c281-4036-87a8-fc0b7451727a",
+      "id": "f9e4b882-d72b-4e69-a120-b6a5937e554d",
       "name": "Create an image",
       "type": "n8n-nodes-base.apiTemplateIo",
       "typeVersion": 1,
@@ -116,8 +116,8 @@
       ],
       "credentials": {
         "apiTemplateIoApi": {
-          "id": "vNIrPpfU5KGJggDq",
-          "name": "APITemplate.io account"
+          "id": "VtZS5IMyzrgGCOmS",
+          "name": "APITemplate.io (TinnitusHelp)"
         }
       }
     },
@@ -132,7 +132,7 @@
           }
         }
       },
-      "id": "8e86cbfd-714b-4108-ab57-231bfd59dbe8",
+      "id": "92cab31a-ac98-4850-ac36-7e833ce7deee",
       "name": "Download APITemplate Image",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -151,14 +151,14 @@
         },
         "repository": {
           "__rl": true,
-          "value": "crypto-wiki-automation",
+          "value": "tinnitus-help-automation",
           "mode": "name"
         },
         "filePath": "=images/posts/{{$('Set Slug').item.json.slug}}.png",
         "binaryData": true,
         "commitMessage": "new automated image"
       },
-      "id": "11f02230-01d7-4ef6-8fee-f8fbb368f722",
+      "id": "6e62b1c9-d34e-4645-bf71-976e469df604",
       "name": "Upload to GitHub",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
@@ -166,7 +166,7 @@
         -1168,
         512
       ],
-      "webhookId": "077f29d7-8e40-4b35-927b-da35e335485e",
+      "webhookId": "8c7ce9b9-6fc0-49de-944a-19a21dda4d06",
       "credentials": {
         "githubApi": {
           "id": "PGPD26vSgTS2AeM8",
@@ -176,9 +176,9 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://thecrypto.wiki/posts\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  Read more: 👉 {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = variant.replace(\"{{link}}\", \"Read more at thecrypto.wiki\");\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/crypto-wiki-automation/refs/heads/main/images/posts/${slug}.png`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
+        "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://thecrypto.wiki/posts\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  Read more: 👉 {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = variant.replace(\"{{link}}\", \"Read more at thecrypto.wiki\");\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/blog/${slug}.png`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
       },
-      "id": "c9f628f9-5080-434a-aa28-3a8d34705de3",
+      "id": "85da35f0-bf45-4856-ba3c-e678ec8340b5",
       "name": "Format Social Post",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
@@ -208,7 +208,7 @@
           }
         }
       },
-      "id": "4698e918-da4b-4da0-b2c3-e4a29d8da7cf",
+      "id": "66437c9c-f87f-4fb2-89a5-fa33e15c0962",
       "name": "Instagram Create Media",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
@@ -244,7 +244,7 @@
           }
         }
       },
-      "id": "266eae45-cec4-4b63-a3a3-d277d449104d",
+      "id": "64bac331-8995-4a92-859d-1b6a9236671c",
       "name": "Facebook Post",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
@@ -276,7 +276,7 @@
           }
         }
       },
-      "id": "b0ac445d-0c7d-4ac5-92f6-93779fe6495a",
+      "id": "ac9574db-4f8e-4e17-953b-1be554044289",
       "name": "Instagram Post",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
@@ -306,13 +306,13 @@
         -656,
         704
       ],
-      "id": "2e48ad26-7392-43a4-89ba-52eac7797743",
+      "id": "e5961b8a-a0aa-43df-a111-bf293f9e5016",
       "name": "Telegram Post",
-      "webhookId": "5451a267-98bb-425d-9640-76c1afb4791e",
+      "webhookId": "64019144-1c77-4b4f-93a0-a9a579593793",
       "credentials": {
         "telegramApi": {
           "id": "uVLOnoo4RVLvHhIs",
-          "name": "Telegram account"
+          "name": "Telegram (CryptoWiki)"
         }
       }
     },
@@ -341,16 +341,16 @@
         -736,
         320
       ],
-      "id": "da5cc783-e352-439b-82e2-73a4cc6c62a3",
+      "id": "f52ee491-05f6-46e2-a7f2-eeab695ff39b",
       "name": "Upload Media to Twitter",
       "credentials": {
         "twitterOAuth2Api": {
           "id": "QT8bLYGAdrhMNYdJ",
-          "name": "X account"
+          "name": "X account (CryptoWiki)"
         },
         "twitterOAuth1Api": {
           "id": "gG2OhuzCvK3obxs2",
-          "name": "X OAuth account"
+          "name": "X OAuth account (CryptoWiki)"
         }
       }
     },
@@ -361,7 +361,7 @@
           "attachments": "={{ $json.media_id_string }}"
         }
       },
-      "id": "3c64430d-0166-47cb-aefe-73d1dcbf8032",
+      "id": "da11b249-2c6c-4ccc-b004-067b02223e1d",
       "name": "Create Tweet1",
       "type": "n8n-nodes-base.twitter",
       "typeVersion": 2,
@@ -372,7 +372,7 @@
       "credentials": {
         "twitterOAuth2Api": {
           "id": "QT8bLYGAdrhMNYdJ",
-          "name": "X account"
+          "name": "X account (CryptoWiki)"
         }
       }
     }
@@ -509,11 +509,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8f9cfea7-170d-4f9e-890d-8991c7013f93",
+  "versionId": "8efa1c17-7801-46de-a0ba-019c30b36a4e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "002b5e092f04f4d75aa57fd214532db5fa3d65fe608d265bda2ed541d575f595"
   },
-  "id": "u7GlLki5dqrygOOY",
+  "id": "V3Ef1FFVFdyinxka",
   "tags": []
 }

@@ -1,14 +1,15 @@
-# AI Post Writing Guidelines
+# AI Post Writing Guidelines for Tinnitus Help
 
 ## Structure (Flexible 5-8 Core Sections)
 
 **Common Post Types:**
 
-- **"What is..."** (Explanatory): Definition → How it works → Use cases → Conclusion
-- **"How to..."** (Tutorial): Introduction → Step-by-step → Best practices → Conclusion
-- **Educational/Topical**: Introduction → Main concepts → Examples → Practical considerations → Conclusion
+- **"What is..."** (Explanatory): Definition → Symptoms → Causes → Diagnosis → Treatment/Management → Conclusion
+- **"How to..."** (Tutorial): Introduction → Why it matters → Step-by-step strategies → Best practices → When to seek help → Conclusion
+- **"Tinnitus and..."** (Relationship/Connection): Introduction → Connection explanation → Mechanisms → Management strategies → Conclusion
+- **Question-based** (e.g., "Does tinnitus go away?"): Question → Answer overview → Types/context → Factors → Management → Conclusion
 
-**FLEXIBILITY**: Add contextual sections as needed (e.g., "Security Considerations", "Future Outlook", "Comparison with Alternatives").
+**FLEXIBILITY**: Add contextual sections as needed (e.g., "Research and Future Outlook", "Common Myths", "When to See a Doctor", "Risk Factors").
 
 For **"How to..."** and beginner-focused guides, aim for this typical flow:
 
@@ -16,32 +17,36 @@ For **"How to..."** and beginner-focused guides, aim for this typical flow:
 - **Why this matters / stakes** – what can go wrong or what value is unlocked
 - **Core concepts / basics** – minimal theory needed to understand the steps
 - **Step‑by‑step / practical section** – clear actions, checklists supported by narrative
-- **Common mistakes / FAQs / troubleshooting** – show, don’t just tell, how things go wrong in practice
+- **Common mistakes / FAQs / troubleshooting** – show, don't just tell, how things go wrong in practice
 - **Conclusion** – reinforce key takeaways, build confidence, and suggest safe next steps
 
 ## Content Requirements
 
 - **Length**: 1,200-2,500 words
-- **Internal Links**: 8-15 total, ALL using **[Text](/path)** bold format, flowing naturally
-- **Images**: Exactly 2 with descriptive alt text using `/images/posts/` paths
+- **Internal Links**: 8-15 total, flowing naturally throughout content
+- **Images**: Exactly 2 with descriptive alt text using `/images/` paths
   - First: After main concept or first major section
   - Second: Before conclusion or after practical sections
-- **Formatting**: ## for main headings, **bold** for ALL sub-categories in bullet points
-- **Tone**: Professional, educational, expert-level, E-E-A-T compliant, accessible to beginners when possible
+- **Formatting**: Use `<Highlighter>` tags for main section headings, **bold** for sub-categories in bullet points
+- **Tone**: Professional, empathetic, educational, expert-level, E-E-A-T compliant, accessible to beginners when possible
+- **Special Components**:
+  - `<Blockquote>` at the beginning with 2-3 sentence summary
+  - `<AdComponent />` placed 2-3 times throughout (after major sections)
+  - `<Image>` components with descriptive alt text
 
-## Internal Linking (ALWAYS USE BOLD FORMAT)
+## Internal Linking (ALWAYS USE NATURAL FORMAT)
 
-**MANDATORY FORMAT**: **[Text](/path)** NOT [Text](/path)
+**MANDATORY FORMAT**: Links should flow naturally in sentences, NOT forced phrases like "see our guide on..."
 
 **DO Link When:**
 
-- Core concepts at first mention: "understanding **[Bitcoin](/posts/what-is-bitcoin)**"
-- Related educational content when naturally connecting: "If you're new to crypto, our **[crypto for beginners](/posts/crypto-for-beginners)** guide..."
-- Practical guides in context: "Learn more: **[How to Buy Your First Cryptocurrency](/posts/how-to-buy-your-first-crypto)**"
-- Technologies/protocols: "built on **[blockchain](/posts/what-is-blockchain)** technology"
-- Exchanges when recommending: "purchase on **[Coinbase](/exchanges/coinbase)**"
-- Crypto OGs when mentioned: "created by **[Vitalik Buterin](/crypto-ogs/vitalik-buterin)**"
-- Comparisons: "Unlike **[Bitcoin](/posts/what-is-bitcoin)** which uses Proof-of-Work..."
+- Core concepts at first mention: "understanding **[tinnitus](/blog/what-is-tinnitus)**"
+- Related educational content when naturally connecting: "If you're new to tinnitus management, our **[managing tinnitus](/blog/managing-tinnitus)** guide..."
+- Practical guides in context: "Learn more: **[How Audiologists Diagnose and Treat Tinnitus](/blog/how-audiologists-diagnose-and-treat-tinnitus)**"
+- Related conditions/topics: "linked to **[stress and anxiety](/blog/tinnitus-and-stress)**"
+- Sound therapy resources: "explore our **[Zen sound library](/zen)**" or "try **[white noise](/zen/white-noise)**"
+- Management strategies: "effective **[sound therapy](/blog/the-power-of-white-noise)**"
+- When referencing specific sections: "common **[causes of tinnitus](/blog/what-is-tinnitus#what-causes-tinnitus-uncovering-the-roots)**"
 
 **DON'T Link:**
 
@@ -53,48 +58,44 @@ For **"How to..."** and beginner-focused guides, aim for this typical flow:
 
 **Link Validation:**
 
-- ONLY use links from provided database (crypto_ogs, posts, exchanges, tools)
+- ONLY use links from provided database (blog posts, zen sounds)
 - Database format: `key|slug|title` - use exact slug from database
-- **Concepts**: **[Title](/posts/{slug})** | **Exchanges**: **[Exchange](/exchanges/{slug})** | **Crypto OGs**: **[Name](/crypto-ogs/{slug})** | **Tools**: **[Tool](/tools/{slug})**
+- **Blog Posts**: **[Title](/blog/{slug})**
+- **Zen Sounds**: **[Sound Name](/zen/{slug})**
+- **App**: **[our app](/app)** or **[tinnitus relief app](/app)**
 
 ## Writing Standards
 
-- **Specific Numbers & Data**: Use exact numbers "200+ cryptocurrencies", "99.9% reduction", "2,700-4,000 TPS" - AVOID vague terms like "many", "most", "several"
-- **Historical Context**: Include founding years, launch dates, key events with dates
-- **Risk Context**: Include naturally when discussing features (e.g., "While leverage can amplify profits, it also increases potential losses")
-- **Balanced Tone**: Acknowledge strengths AND weaknesses objectively (e.g., "Despite its impressive technology, Solana has faced significant challenges...")
+- **Specific Numbers & Data**: Use exact numbers "millions worldwide", "15-20% of adults", "60/60 rule" - AVOID vague terms like "many", "most", "several" when specific data is available
+- **Medical Accuracy**: Always acknowledge when evidence is limited, use phrases like "some research suggests", "may help", "for some individuals" when evidence is not definitive
+- **Risk Context**: Include naturally when discussing treatments or strategies (e.g., "Always consult your healthcare provider before trying new supplements")
+- **Balanced Tone**: Acknowledge both the challenges AND hope - be realistic but encouraging (e.g., "While there's no cure, effective management strategies can significantly improve quality of life")
 - **Actionable Content**: Provide practical advice with context, explain "why" not just "what"
 - **Natural Voice**: Vary sentence length, avoid AI-like filler ("In conclusion", "Furthermore" - use sparingly), write conversationally but professionally
 - **Beginner-Friendly**: Explain technical terms on first use when concept is central, link to foundational content when appropriate
-- **Concrete Examples & Mini Case Studies**: Where helpful (especially for security, scams, “how to”, and risk topics), include at least 2 short real-world scenarios or anonymized mini case studies that illustrate what happens when things go right vs. wrong.
+- **Empathetic Tone**: Acknowledge the reader's challenges and concerns directly, use "you" to address them personally
+- **Research-Backed**: Reference current research when available, but acknowledge limitations and ongoing studies
 
 ### Narrative & Engagement
 
-- **Directly address the reader**: Use “you”/“your” to speak to the reader and acknowledge their worries, curiosity, and goals.
-- **Use rhetorical questions sparingly but effectively**: e.g., “Wondering why confirmations matter so much?” to open sections and guide attention.
-- **Leverage analogies and metaphors**: Explain complex ideas with simple comparisons (e.g., “Think of sending crypto like sending a package—you need the exact address, the right carrier (network), and proper labeling (memo/tag)”).
-- **Balance narrative and checklists**: Use bullet lists for clarity, but **always surround them with short narrative paragraphs** that explain why each step/section matters. Avoid posts that feel like pure checklists or manuals.
-- **Encouraging, reassuring tone**: Especially for beginners and security topics, combine honest risk discussion with reassurance that, by following a clear process, the reader can act safely and confidently.
+- **Directly address the reader**: Use "you"/"your" to speak to the reader and acknowledge their worries, curiosity, and goals
+- **Use rhetorical questions sparingly but effectively**: e.g., "Wondering why stress makes tinnitus worse?" to open sections and guide attention
+- **Leverage analogies and metaphors**: Explain complex ideas with simple comparisons (e.g., "Think of tinnitus like a smoke alarm that won't turn off—the sound itself isn't dangerous, but it signals something needs attention")
+- **Balance narrative and checklists**: Use bullet lists and tables for clarity, but **always surround them with short narrative paragraphs** that explain why each step/section matters. Avoid posts that feel like pure checklists or manuals
+- **Encouraging, reassuring tone**: Especially for beginners and management topics, combine honest discussion of challenges with reassurance that, by following clear strategies, the reader can improve their situation
+- **Acknowledge the struggle**: Recognize that living with tinnitus is difficult, validate the reader's experience
 
 ## Category Selection (MANDATORY - Use ONLY These Categories)
 
 Choose 1-4 categories from this EXACT list (no other categories allowed):
 
-- **Investing** – Investment strategies, trading, portfolio management
-- **Beginners** – Introductory, foundational content for newcomers
-- **Regulation** – Regulatory topics, legal frameworks, compliance
-- **Bitcoin** – Bitcoin-specific content (only when Bitcoin is primary focus)
-- **Adoption** – Mainstream adoption, institutional interest, real-world use cases
-- **Blockchain** – Blockchain fundamentals, technology, infrastructure
-- **Technology** – Technical explanations, protocols, innovations
-- **Web3** – Web3, DeFi, NFTs, decentralized applications, metaverse
-- **Predictions** – Future forecasts, trends, market predictions
-- **Security** – Security practices, wallet safety, scam prevention
-- **Politics** – Political impacts, government policies, elections affecting crypto
-- **Sustainability** – Environmental impact, green crypto, energy consumption
-- **Gaming** – GameFi, crypto gaming, play-to-earn
-- **Nfts** – NFT-specific content, digital collectibles, tokenization
-- **Ai** – AI-related crypto content, machine learning in blockchain
+- **Basics** – Foundational, introductory content about tinnitus
+- **Management** – Practical strategies, techniques, and approaches for managing tinnitus
+- **Research** – Scientific research, studies, and evidence-based information
+- **Psychology** – Mental health, emotional impact, stress, anxiety, depression related to tinnitus
+- **Nutrition** – Dietary approaches, supplements, hydration, lifestyle factors
+- **Meditation** – Mindfulness, meditation, relaxation techniques
+- **Sounds** – Sound therapy, white noise, nature sounds, audio-based treatments
 
 **Guidelines**: Choose 2-3 optimal categories, match to post's primary focus (not just mentioned terms), quality over quantity.
 
@@ -102,74 +103,112 @@ Choose 1-4 categories from this EXACT list (no other categories allowed):
 
 Generate 8-15 SEO-focused tags covering:
 
-- Primary topic/asset (e.g., "Bitcoin", "Ethereum", "Altcoins")
-- Technology/concept (e.g., "blockchain", "smart contracts", "DeFi", "NFTs")
-- Action/use case (e.g., "crypto trading", "staking", "investing")
-- Audience (e.g., "beginners", "investors", "traders")
-- Related topics (e.g., "security", "wallets", "exchanges")
+- Primary topic/condition (e.g., "tinnitus", "hearing loss", "sound therapy")
+- Symptoms/experiences (e.g., "ringing in ears", "buzzing", "sleep problems")
+- Management strategies (e.g., "stress management", "meditation", "white noise")
+- Related conditions (e.g., "anxiety", "depression", "insomnia")
+- Audience (e.g., "beginners", "veterans", "musicians")
+- Treatment types (e.g., "CBT", "hearing aids", "sound masking")
 
 ## Opening Style
 
 **Effective Patterns:**
 
-- **Engaging Hook**: "Solana has rapidly emerged as a significant player in the **[Blockchain](/posts/what-is-blockchain)** landscape, distinguished by its focus on high speed, scalability, and low transaction costs."
+- **Engaging Hook**: "Tinnitus, characterized by persistent ringing, buzzing, or other sounds in the ears without an external source, can significantly impact daily life."
+- **Question Hook**: "Does tinnitus go away on its own? This is one of the most common questions asked by those experiencing this challenging condition."
+- **Relatable Scenario**: "You're lying in bed, trying to fall asleep, but the constant ringing in your ears makes it impossible to find peace..."
 - **Definition & Significance**: "[Topic] is [definition]. It represents..." - Always include WHY it matters
-- **Question Hook**: "Are NFTs dead? While the speculative frenzy has cooled, the underlying **[Blockchain](/posts/what-is-blockchain)** technology is far from obsolete."
-- **Historical Context**: "Since [Bitcoin's launch in 2009](/posts/what-is-bitcoin)..." - Connect to current relevance
 
 **Requirements**:
 
-- Start with **2–3 short paragraphs**, not a bullet list.
+- Start with **2–3 short paragraphs**, not a bullet list
 - Use at least one of:
-  - A **relatable scenario** (“You’ve just bought your first Bitcoin and want to send it to a friend…”),
-  - A **question hook** (“Heard about Bitcoin but not sure where to start?”),
-  - A **short context or historical hook** tied to today.
-- Explicitly **acknowledge the reader’s situation and concerns** (e.g., anxiety about making mistakes, confusion as a beginner).
-- Clearly state **what they will learn** and **why it matters now**.
-- Include ONE natural internal link where it adds context (not forced).
-- Avoid starting with dense warnings or raw definitions alone—lead with connection, then explain.
+  - A **relatable scenario** ("You've noticed your tinnitus gets worse when you're stressed...")
+  - A **question hook** ("Wondering if your tinnitus will ever go away?")
+  - A **short context or connection** tied to tinnitus management
+- Explicitly **acknowledge the reader's situation and concerns** (e.g., anxiety about symptoms, frustration with lack of sleep, confusion about treatment options)
+- Clearly state **what they will learn** and **why it matters now**
+- Include ONE natural internal link where it adds context (not forced)
+- Avoid starting with dense medical definitions alone—lead with connection, then explain
+- **ALWAYS include a `<Blockquote>` section** right after frontmatter with a 2-3 sentence summary that highlights key points
 
 ## Conclusion Style
 
-- Every post MUST end with a **Conclusion section** using a clear heading, e.g., `## Conclusion: [Short Benefit-Oriented Phrase]` or `## Conclusion`.
-- The conclusion should be **2–3 paragraphs**, not just a bullet checklist.
-- Summarize the **key takeaways in plain language** and restate why the topic matters.
-- **Reinforce confidence**: make it clear that by following the outlined concepts/steps, the reader can act more safely or make better decisions.
-- Where relevant, suggest **1–2 practical next steps** (e.g., which related guide to read next, or what small action to take first), linking internally in a natural way.
+- Every post MUST end with a **Conclusion section** using a clear heading, e.g., `<Highlighter>Conclusion: [Short Benefit-Oriented Phrase]</Highlighter>` or `<Highlighter>Conclusion</Highlighter>`
+- The conclusion should be **2–3 paragraphs**, not just a bullet checklist
+- Summarize the **key takeaways in plain language** and restate why the topic matters
+- **Reinforce hope and confidence**: make it clear that by following the outlined concepts/strategies, the reader can improve their situation
+- Where relevant, suggest **1–2 practical next steps** (e.g., which related guide to read next, what small action to take first, when to seek professional help), linking internally in a natural way
+- End on an encouraging, forward-looking note
 
 ## Frontmatter Requirements
 
 **Title Formats:**
 
-- "What is [Topic]?" or "What is [Topic]? A Beginner's Guide"
-- "How to [Action]"
+- "What is [Topic]?" or "What is [Topic]? A Comprehensive Guide"
+- "How to [Action]" or "[Topic] and [Related Topic]"
 - "Understanding [Topic]" or "[Topic] Explained"
 - "[Topic]: [Subtitle]" for descriptive posts
-- Question format for analytical posts
+- Question format for analytical posts (e.g., "Does Tinnitus Go Away?")
 
 **Description (CRITICAL - EXACTLY 150-160 characters):**
 
 - VERY SPECIFIC with unique differentiators (NOT generic)
-- Formula: [Topic name] + [Key features] + [What readers learn] + [Audience optional]
-- ❌ BAD: "Learn about cryptocurrency and how it works"
-- ✅ GOOD: "Bitcoin is the world's first cryptocurrency. Learn about its history, how it works, and why it's considered digital gold. Perfect for beginners looking to understand the foundation of the crypto world."
-- ❌ BAD: "Understanding crypto taxes explained"
-- ✅ GOOD: "How is crypto taxed around the world, including key concepts like taxable events, capital gains and best practices for keeping track of your transactions."
+- Formula: [Topic name] + [Key features/benefits] + [What readers learn] + [Audience optional]
+- ❌ BAD: "Learn about tinnitus and how to manage it"
+- ✅ GOOD: "Understand tinnitus — the perception of sound without an external source. Learn about symptoms, causes and treatments."
+- ❌ BAD: "Stress management for tinnitus explained"
+- ✅ GOOD: "Learn how stress can aggravate tinnitus and discover effective stress management techniques to alleviate its impact."
 
-**Image**: `/images/posts/{descriptive-name}.jpg` or `.png`
+**Image**: `/images/{descriptive-name}.jpg` or `.png` (use descriptive, relevant image names)
 
-**Categories**: Array of 1-4 from allowed list above
+**Tags**: Array of 8-15 relevant keywords (see Tag Generation section above)
 
-**Tags**: Array of 8-15 relevant keywords
+**Date**: Use format 'Month DD, YYYY' (e.g., 'July 13, 2023')
 
-**Crypto OGs (Optional)**: Only when founder/creator mentioned - use proper capitalization in frontmatter: "Satoshi Nakamoto", "Vitalik Buterin"
+**Featured** (Optional): Set to `true` for important/popular posts
 
-**Exchanges (Optional)**: Only when recommending services - use proper capitalization in frontmatter: "Coinbase", "Binance", "Kraken"
+## Special Formatting Requirements
 
-**IMPORTANT - Capitalization**:
+**Section Headings**: Use `<Highlighter>Section Title</Highlighter>` format for all main section headings
 
-- ALWAYS use proper capitalization for crypto-ogs and exchanges in BOTH frontmatter and content (e.g., "Satoshi Nakamoto", "Vitalik Buterin", "Coinbase", "Kraken", "Uniswap")
-- This ensures consistency and readability across all articles
+**Images**: Use `<Image>` component format:
+
+```jsx
+<Image
+  src="/images/image-name.jpg"
+  alt="Descriptive alt text explaining what the image shows and its relevance to tinnitus."
+/>
+```
+
+**Blockquote**: Use at the very beginning (after frontmatter):
+
+```jsx
+<Blockquote>
+  [2-3 sentence summary highlighting key points and value of the article]
+</Blockquote>
+```
+
+**Ad Components**: Place `<AdComponent />` 2-3 times throughout the post, typically:
+
+- After the first major section
+- Midway through the content
+- Before the conclusion
+
+**Tables**: Use markdown table format for comparisons, strategies, or organized information:
+
+```markdown
+| Column 1            | Column 2    | Column 3     |
+| :------------------ | :---------- | :----------- |
+| **Bold subheading** | Description | Related link |
+```
+
+**Bold Formatting**: Use **bold** for:
+
+- Key terms on first mention
+- Sub-categories in bullet points
+- Important concepts or strategies
+- Table subheadings
 
 ## Content Restrictions
 
@@ -179,6 +218,15 @@ Generate 8-15 SEO-focused tags covering:
 - Bibliography or citation lists
 - External links to other websites (only use internal links from provided database)
 - Any closing sections that list related articles - links should be integrated naturally throughout the content
+- Promises of cures or guaranteed results
+- Medical advice that should come from healthcare professionals (always recommend consulting professionals)
+
+**DO Include:**
+
+- When to seek professional help sections for medical topics
+- Disclaimers about consulting healthcare providers when discussing treatments
+- Acknowledgment of research limitations when evidence is limited
+- Encouragement and hope balanced with realistic expectations
 
 ## Final JSON Output (REQUIRED)
 
@@ -187,17 +235,15 @@ After writing the post, provide JSON:
 ```json
 {
   "tags": [
-    "bitcoin",
-    "cryptocurrency",
-    "blockchain",
-    "digital gold",
-    "crypto investing",
-    "crypto basics"
+    "tinnitus",
+    "stress management",
+    "anxiety",
+    "sleep",
+    "meditation",
+    "coping strategies"
   ],
-  "description": "Bitcoin is the world's first cryptocurrency. Learn about its history, how it works, and why it's considered digital gold. Perfect for beginners looking to understand the foundation of the crypto world.",
-  "categories": ["Beginners", "Technology", "Blockchain", "Bitcoin"],
-  "crypto_ogs": ["Satoshi Nakamoto"],
-  "exchanges": ["Coinbase", "Binance", "Kraken"]
+  "description": "Learn how stress can aggravate tinnitus and discover effective stress management techniques to alleviate its impact.",
+  "categories": ["Management", "Psychology", "Meditation"]
 }
 ```
 
@@ -205,5 +251,13 @@ After writing the post, provide JSON:
 
 - **Tags**: 8-15 SEO-focused keywords
 - **Description**: EXACTLY 150-160 characters, SPECIFIC with unique differentiator
-- **Categories**: 1-4 from allowed list: Investing, Beginners, Regulation, Bitcoin, Adoption, Blockchain, Technology, Web3, Predictions, Security, Politics, Sustainability, Gaming, Nfts, Ai
-- **Crypto OGs/Exchanges**: Optional, only when contextually relevant
+- **Categories**: 1-4 from allowed list: Basics, Management, Research, Psychology, Nutrition, Meditation, Sounds
+
+## Tone and Voice Guidelines
+
+- **Empathetic but Professional**: Acknowledge the difficulty of living with tinnitus while maintaining professional credibility
+- **Hopeful but Realistic**: Provide hope and encouragement without making false promises
+- **Educational but Accessible**: Use expert-level knowledge but explain in ways beginners can understand
+- **Supportive**: Validate the reader's experience and concerns
+- **Action-Oriented**: Focus on what readers can DO, not just what they should know
+- **Evidence-Based**: Reference research when available, but acknowledge limitations honestly

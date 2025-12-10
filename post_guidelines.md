@@ -27,7 +27,7 @@ For **"How to..."** and beginner-focused guides, aim for this typical flow:
 - **Images**: Exactly 2 with descriptive alt text using `/images/` paths
   - First: After main concept or first major section
   - Second: Before conclusion or after practical sections
-- **Formatting**: Use `<Highlighter>` tags for main section headings, **bold** for sub-categories in bullet points
+- **Formatting**: Use `## <Highlighter>` tags for main section headings (always prefix with `##`), **bold** for sub-categories in bullet points
 - **Tone**: Professional, empathetic, educational, expert-level, E-E-A-T compliant, accessible to beginners when possible
 - **Special Components**:
   - `<Blockquote>` at the beginning with 2-3 sentence summary
@@ -85,30 +85,11 @@ For **"How to..."** and beginner-focused guides, aim for this typical flow:
 - **Encouraging, reassuring tone**: Especially for beginners and management topics, combine honest discussion of challenges with reassurance that, by following clear strategies, the reader can improve their situation
 - **Acknowledge the struggle**: Recognize that living with tinnitus is difficult, validate the reader's experience
 
-## Category Selection (MANDATORY - Use ONLY These Categories)
+## Tags Selection (MANDATORY - Use ONLY These Tags)
 
-Choose 1-4 categories from this EXACT list (no other categories allowed):
+Choose 1-4 tags from this EXACT list (no other tags allowed):
 
-- **Basics** – Foundational, introductory content about tinnitus
-- **Management** – Practical strategies, techniques, and approaches for managing tinnitus
-- **Research** – Scientific research, studies, and evidence-based information
-- **Psychology** – Mental health, emotional impact, stress, anxiety, depression related to tinnitus
-- **Nutrition** – Dietary approaches, supplements, hydration, lifestyle factors
-- **Meditation** – Mindfulness, meditation, relaxation techniques
-- **Sounds** – Sound therapy, white noise, nature sounds, audio-based treatments
-
-**Guidelines**: Choose 2-3 optimal categories, match to post's primary focus (not just mentioned terms), quality over quantity.
-
-## Tag Generation
-
-Generate 8-15 SEO-focused tags covering:
-
-- Primary topic/condition (e.g., "tinnitus", "hearing loss", "sound therapy")
-- Symptoms/experiences (e.g., "ringing in ears", "buzzing", "sleep problems")
-- Management strategies (e.g., "stress management", "meditation", "white noise")
-- Related conditions (e.g., "anxiety", "depression", "insomnia")
-- Audience (e.g., "beginners", "veterans", "musicians")
-- Treatment types (e.g., "CBT", "hearing aids", "sound masking")
+basics, history, lifestyle, management, meditation, neuroscience, nutrition, psychology, research, society, sounds, technology
 
 ## Opening Style
 
@@ -134,7 +115,7 @@ Generate 8-15 SEO-focused tags covering:
 
 ## Conclusion Style
 
-- Every post MUST end with a **Conclusion section** using a clear heading, e.g., `<Highlighter>Conclusion: [Short Benefit-Oriented Phrase]</Highlighter>` or `<Highlighter>Conclusion</Highlighter>`
+- Every post MUST end with a **Conclusion section** using a clear heading, e.g., `## <Highlighter>Conclusion: [Short Benefit-Oriented Phrase]</Highlighter>` or `## <Highlighter>Conclusion</Highlighter>`
 - The conclusion should be **2–3 paragraphs**, not just a bullet checklist
 - Summarize the **key takeaways in plain language** and restate why the topic matters
 - **Reinforce hope and confidence**: make it clear that by following the outlined concepts/strategies, the reader can improve their situation
@@ -162,7 +143,7 @@ Generate 8-15 SEO-focused tags covering:
 
 **Image**: `/images/{descriptive-name}.jpg` or `.png` (use descriptive, relevant image names)
 
-**Tags**: Array of 8-15 relevant keywords (see Tag Generation section above)
+**Tags**: Array of 1-4 relevant keywords (see Tag Generation section above)
 
 **Date**: Use format 'Month DD, YYYY' (e.g., 'July 13, 2023')
 
@@ -170,7 +151,7 @@ Generate 8-15 SEO-focused tags covering:
 
 ## Special Formatting Requirements
 
-**Section Headings**: Use `<Highlighter>Section Title</Highlighter>` format for all main section headings
+**Section Headings**: Use `## <Highlighter>Section Title</Highlighter>` format for all main section headings (always prefix with `##`)
 
 **Images**: Use `<Image>` component format:
 
@@ -234,24 +215,15 @@ After writing the post, provide JSON:
 
 ```json
 {
-  "tags": [
-    "tinnitus",
-    "stress management",
-    "anxiety",
-    "sleep",
-    "meditation",
-    "coping strategies"
-  ],
-  "description": "Learn how stress can aggravate tinnitus and discover effective stress management techniques to alleviate its impact.",
-  "categories": ["Management", "Psychology", "Meditation"]
+  "tags": ["tinnitus", "anxiety", "meditation"],
+  "description": "Learn how stress can aggravate tinnitus and discover effective stress management techniques to alleviate its impact."
 }
 ```
 
 **Requirements:**
 
-- **Tags**: 8-15 SEO-focused keywords
+- **Tags**: Use the Tags from Tags Selection
 - **Description**: EXACTLY 150-160 characters, SPECIFIC with unique differentiator
-- **Categories**: 1-4 from allowed list: Basics, Management, Research, Psychology, Nutrition, Meditation, Sounds
 
 ## Tone and Voice Guidelines
 

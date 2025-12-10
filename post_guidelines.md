@@ -25,7 +25,7 @@ For **"How to..."** and beginner-focused guides, aim for this typical flow:
 - **Length**: 1,200-2,500 words
 - **Internal Links**: 8-15 total, flowing naturally throughout content
 - **Images**: Exactly 2 with descriptive alt text using `/images/` paths
-  - First: After main concept or first major section
+  - First (Cover Image): Immediately after `<Blockquote>` section (must match frontmatter `image` field)
   - Second: Before conclusion or after practical sections
 - **Formatting**: Use `## <Highlighter>` tags for main section headings (always prefix with `##`), **bold** for sub-categories in bullet points
 - **Tone**: Professional, empathetic, educational, expert-level, E-E-A-T compliant, accessible to beginners when possible
@@ -111,7 +111,7 @@ basics, history, lifestyle, management, meditation, neuroscience, nutrition, psy
 - Clearly state **what they will learn** and **why it matters now**
 - Include ONE natural internal link where it adds context (not forced)
 - Avoid starting with dense medical definitions alone—lead with connection, then explain
-- **ALWAYS include a `<Blockquote>` section** right after frontmatter with a 2-3 sentence summary that highlights key points
+- **ALWAYS include a `<Blockquote>` section** right after frontmatter with a 2-3 sentence summary that highlights key points, followed immediately by the cover image (matching frontmatter `image` field)
 
 ## Conclusion Style
 
@@ -169,6 +169,8 @@ basics, history, lifestyle, management, meditation, neuroscience, nutrition, psy
   [2-3 sentence summary highlighting key points and value of the article]
 </Blockquote>
 ```
+
+**Cover Image**: ALWAYS place the cover image (the image specified in frontmatter `image` field) immediately after the `<Blockquote>` section, before any other content.
 
 **Ad Components**: Place `<AdComponent />` 2-3 times throughout the post, typically:
 

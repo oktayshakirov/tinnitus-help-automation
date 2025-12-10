@@ -187,6 +187,10 @@
     "youth-and-tinnitus": {
       "slug": "youth-and-tinnitus",
       "title": "Youth and Tinnitus"
+    },
+    "pulsatile-tinnitus-why-you-hear-your-heartbeat": {
+      "slug": "pulsatile-tinnitus-why-you-hear-your-heartbeat",
+      "title": "Pulsatile Tinnitus: Why You Hear Your Heartbeat"
     }
   },
   "zen": {
@@ -229,7 +233,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 1,
+    "blog": 2,
     "zen": 1
   }
 }

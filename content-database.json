@@ -191,6 +191,10 @@
     "pulsatile-tinnitus-why-you-hear-your-heartbeat": {
       "slug": "pulsatile-tinnitus-why-you-hear-your-heartbeat",
       "title": "Pulsatile Tinnitus: Why You Hear Your Heartbeat"
+    },
+    "new-tinnitus-research-you-should-know-about-in-2026": {
+      "slug": "new-tinnitus-research-you-should-know-about-in-2026",
+      "title": "New Tinnitus Research You Should Know About in 2026"
     }
   },
   "zen": {
@@ -233,7 +237,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 2,
+    "blog": 3,
     "zen": 1
   }
 }

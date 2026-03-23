@@ -195,6 +195,10 @@
     "new-tinnitus-research-you-should-know-about-in-2026": {
       "slug": "new-tinnitus-research-you-should-know-about-in-2026",
       "title": "New Tinnitus Research You Should Know About in 2026"
+    },
+    "can-neck-tension-cause-tinnitus": {
+      "slug": "can-neck-tension-cause-tinnitus",
+      "title": "Can Neck Tension Cause Tinnitus?"
     }
   },
   "zen": {
@@ -237,7 +241,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 3,
+    "blog": 4,
     "zen": 1
   }
 }

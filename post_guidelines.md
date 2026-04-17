@@ -77,6 +77,8 @@ For **"How to..."** and beginner-focused guides, aim for this typical flow:
 
 **Voice & Tone**: Conversational, accessible, empathetic. Use "you"/"your" to address readers directly. Acknowledge challenges while maintaining hope. Professional but warm. Use active voice, vary sentence length, avoid AI filler ("In conclusion", "Furthermore" - use sparingly).
 
+**Punctuation**: Use plain ASCII hyphen `-` only. Do not use em dash (`—`) or en dash (`–`) in prose.
+
 **Content Quality**: Use exact numbers ("millions worldwide", "15-20%") not vague terms. Acknowledge evidence limitations ("some research suggests", "may help"). Include risk context naturally ("Always consult your healthcare provider..."). Explain "why" not just "what". Explain technical terms in context on first use, add brief context before introducing concepts.
 
 **Engagement**: Use rhetorical questions sparingly to open sections. Leverage analogies for complex ideas. When lists/tables are needed, surround with narrative paragraphs explaining context. Combine honest challenges with reassurance that strategies can help. Validate reader's struggle.
@@ -122,7 +124,7 @@ MUST end with `## <Highlighter>Conclusion: [Phrase]</Highlighter>` or `## <Highl
 
 **Date**: Use format 'Month DD, YYYY' (e.g., 'July 13, 2023')
 
-**Featured** (Optional): Set to `true` for important/popular posts
+**Featured**: Do not include a `featured` field in generated frontmatter.
 
 ## Special Formatting Requirements
 

@@ -199,6 +199,10 @@
     "can-neck-tension-cause-tinnitus": {
       "slug": "can-neck-tension-cause-tinnitus",
       "title": "Can Neck Tension Cause Tinnitus?"
+    },
+    "tmj-and-tinnitus-the-jaw-connection-most-people-ignore": {
+      "slug": "tmj-and-tinnitus-the-jaw-connection-most-people-ignore",
+      "title": "TMJ and Tinnitus: The Jaw Connection Most People Ignore"
     }
   },
   "zen": {
@@ -241,7 +245,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 4,
+    "blog": 5,
     "zen": 1
   }
 }

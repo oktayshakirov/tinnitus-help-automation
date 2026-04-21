@@ -203,6 +203,10 @@
     "tmj-and-tinnitus-the-jaw-connection-most-people-ignore": {
       "slug": "tmj-and-tinnitus-the-jaw-connection-most-people-ignore",
       "title": "TMJ and Tinnitus: The Jaw Connection Most People Ignore"
+    },
+    "tinnitus-burnout-when-coping-strategies-stop-working": {
+      "slug": "tinnitus-burnout-when-coping-strategies-stop-working",
+      "title": "Tinnitus Burnout: When Coping Strategies Stop Working"
     }
   },
   "zen": {
@@ -245,7 +249,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 5,
+    "blog": 6,
     "zen": 1
   }
 }

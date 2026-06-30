@@ -207,6 +207,10 @@
     "tinnitus-burnout-when-coping-strategies-stop-working": {
       "slug": "tinnitus-burnout-when-coping-strategies-stop-working",
       "title": "Tinnitus Burnout: When Coping Strategies Stop Working"
+    },
+    "caffeine-and-tinnitus": {
+      "slug": "caffeine-and-tinnitus",
+      "title": "Caffeine and Tinnitus"
     }
   },
   "zen": {
@@ -249,7 +253,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 6,
+    "blog": 7,
     "zen": 1
   }
 }

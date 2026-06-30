@@ -27,10 +27,11 @@ Add contextual sections as useful (Myths, Risk Factors, When to See a Doctor, Sa
 - Distribute across the post; max one link per sentence.
 - Good targets: core concepts (what-is-tinnitus, brain/neural), related conditions (stress, sleep, anxiety), management (managing-tinnitus, white-noise, CBT), sound therapy (zen sounds), the app for tracking.
 
-## Images (use the real archive)
-Insert exactly **2** `<Image>` in the body — one after the first main section, one before the conclusion. Choose filenames **ONLY from the Available Body Images list below** (do NOT invent names). Pick images that fit the section's topic.
+## Images
+Insert exactly **2** `<Image>` in the body:
+- **First (after the first section): the MAIN article image.** Write it exactly as `<Image src="/images/MAIN.jpg" alt="..." />` — the system swaps `MAIN` for the correct filename. (This matches the frontmatter image.)
+- **Second (before the conclusion): ONE image from the Available Body Images list below** (do NOT invent names; pick one that fits the topic).
 Format: `<Image src="/images/FILENAME.jpg" alt="Descriptive, tinnitus-relevant alt text." />`
-The main (frontmatter) image is chosen manually later — ignore it.
 
 **Available Body Images:** airpods, airpods-2, alcohol-smoking, anxiety, anxiety-girl, apple-hearing-test, astronaut, audiologist, bird, brain-research, bull, cardiologist, cat, cbd-oil, cbd-oil-woman, celebrity, celebrity2, crowd, daily-routines, depressed-man, digital-art, digital-devices, doctor, drinking-water, evening-routine, fire, fruits, future-technology, gamer, genetics, girl-with-headphones, girl-with-headphones2, happy, happy-girl, headphones, headphones-2, health-app, health-app-2, healthy-diet, jaw-female, jungle, leopard, live-music-show, meditation, megaphone-noise, morning-routine, mother-daughter, musician, neck-tension, neurons, relaxing-woman, research, screaming-man, seasonal-tinnitus, seasonal-tinnitus-2, silence, sleeping-kid, sleeping-woman, stress-tinnitus-man, stress-tinnitus-woman, stressometer, therapy, therapy-2, tinnitus-arts, tinnitus-digital-age, tinnitus-history, tinnitus-history2, tinnitus-military-veterans, tinnitus-military-veterans2, tinnitus-myths-reality, tinnitus-pandemic, tinnitus-pandemic2, tinnitus-wildlife, traveling, van-gogh, van-gogh-starry-night, waterfall-man, woman-and-sunflowers, working-out-female, working-out-male, yoga-dog, young-listening-music, young-tinnitus, zen-nature, zen-white
 
@@ -48,8 +49,8 @@ External links, a References/Further-reading/bibliography section, or any closin
 ```json
 {
   "tags": ["nutrition", "management", "research"],
-  "description": "150–160 char description, specific with a unique differentiator (not generic)."
+  "description": "~120–135 char description, specific with a unique differentiator (not generic)."
 }
 ```
 - **tags: exactly 2–3**, lowercase, ONLY from: `basics, management, research, psychology, nutrition, meditation, sounds`.
-- **description: exactly 150–160 characters.**
+- **description: 120–135 characters** (keep them consistent for layout).

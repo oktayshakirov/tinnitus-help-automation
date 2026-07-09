@@ -13,8 +13,8 @@ Add contextual sections as useful (Myths, Risk Factors, When to See a Doctor, Sa
 
 ## Length & components
 - **1,200–2,500 words.**
-- `<Blockquote>` right after the start: 2–3 sentence summary.
-- `<Highlighter>Section Title</Highlighter>` for every main heading.
+- Post opens with: `<Blockquote>` (2–3 sentence summary) → MAIN `<Image>` → intro paragraphs → sections.
+- `## <Highlighter>Section Title</Highlighter>` for every main heading (always with the `## ` prefix).
 - `<AdComponent />` 2–3 times (after a major section, mid-post, before conclusion).
 - Exactly **2 `<Image>`** (see Images).
 - Markdown tables for comparisons/data. **Bold** key terms on first mention.
@@ -29,7 +29,7 @@ Add contextual sections as useful (Myths, Risk Factors, When to See a Doctor, Sa
 
 ## Images
 Insert exactly **2** `<Image>` in the body:
-- **First (after the first section): the MAIN article image.** Write it exactly as `<Image src="/images/MAIN.jpg" alt="..." />` — the system swaps `MAIN` for the correct filename. (This matches the frontmatter image.)
+- **First: the MAIN article image, placed IMMEDIATELY after the `<Blockquote>`** (before any paragraph). Write it exactly as `<Image src="/images/MAIN.jpg" alt="..." />` - the system swaps `MAIN` for the correct filename.
 - **Second (before the conclusion): ONE image from the Available Body Images list below** (do NOT invent names; pick one that fits the topic).
 Format: `<Image src="/images/FILENAME.jpg" alt="Descriptive, tinnitus-relevant alt text." />`
 
@@ -41,6 +41,9 @@ Format: `<Image src="/images/FILENAME.jpg" alt="Descriptive, tinnitus-relevant a
 - Use specific numbers when available ("15–20% of adults") over vague terms. Acknowledge limited evidence honestly ("some research suggests", "may help").
 - Recommend consulting professionals for medical decisions; include a "When to seek help" angle for medical topics. No cure promises.
 - Balance narrative with lists/tables — always wrap lists in explanatory prose.
+
+## Punctuation
+NEVER use em dashes (—), en dashes (–) or double hyphens (--). Use a plain hyphen "-" or restructure the sentence. Plain apostrophes and quotes preferred.
 
 ## Do NOT include
 External links, a References/Further-reading/bibliography section, or any closing "related articles" list (links go inline). No frontmatter, no `featured` flag.

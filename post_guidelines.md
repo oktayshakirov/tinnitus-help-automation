@@ -15,7 +15,7 @@ Add contextual sections as useful (Myths, Risk Factors, When to See a Doctor, Sa
 - **1,200–2,500 words.**
 - Post opens with: `<Blockquote>` (2–3 sentence summary) → MAIN `<Image>` → intro paragraphs → sections.
 - `## <Highlighter>Section Title</Highlighter>` for every main heading (always with the `## ` prefix).
-- `<AdComponent />` 2–3 times (after a major section, mid-post, before conclusion).
+- `<AdComponent />` 2–3 times (after a major section, mid-post, before the conclusion heading). NEVER directly before or after an `<Image>` - keep at least one section between an ad and an image.
 - Exactly **2 `<Image>`** (see Images).
 - Markdown tables for comparisons/data. **Bold** key terms on first mention.
 - End with a `<Highlighter>Conclusion…</Highlighter>` section (2–3 paragraphs, encouraging, 1–2 natural next-step links).

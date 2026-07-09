@@ -211,6 +211,10 @@
     "tmj-and-tinnitus-the-jaw-connection": {
       "slug": "tmj-and-tinnitus-the-jaw-connection",
       "title": "TMJ and Tinnitus: The Jaw Connection"
+    },
+    "ototoxic-medications-and-tinnitus": {
+      "slug": "ototoxic-medications-and-tinnitus",
+      "title": "Ototoxic Medications and Tinnitus"
     }
   },
   "zen": {
@@ -253,7 +257,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 7,
+    "blog": 8,
     "zen": 1
   }
 }

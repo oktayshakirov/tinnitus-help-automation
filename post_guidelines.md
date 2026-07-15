@@ -52,8 +52,9 @@ External links, a References/Further-reading/bibliography section, or any closin
 ```json
 {
   "tags": ["nutrition", "management", "research"],
-  "description": "~120–135 char description, specific with a unique differentiator (not generic)."
+  "description": "120–135 char description, specific with a unique differentiator (not generic)."
 }
 ```
 - **tags: exactly 2–3**, lowercase, ONLY from: `basics, management, research, psychology, nutrition, meditation, sounds`.
-- **description: 120–135 characters** (keep them consistent for layout).
+- **description: 120–135 characters, hard max 140.** Count the characters before you finish; do NOT exceed 140 (long descriptions get truncated on the site). Aim for ~128 to stay safely in range. Keep them consistent for layout.
+- **title: do NOT output a title.** It is derived automatically from the topic slug (Title Cased), so anything you write is ignored.

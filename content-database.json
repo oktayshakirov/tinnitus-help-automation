@@ -215,6 +215,10 @@
     "ototoxic-medications-and-tinnitus": {
       "slug": "ototoxic-medications-and-tinnitus",
       "title": "Ototoxic Medications and Tinnitus"
+    },
+    "bimodal-neuromodulation-for-tinnitus": {
+      "slug": "bimodal-neuromodulation-for-tinnitus",
+      "title": "bimodal-neuromodulation-for-tinnitus"
     }
   },
   "zen": {
@@ -257,7 +261,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 8,
+    "blog": 9,
     "zen": 1
   }
 }

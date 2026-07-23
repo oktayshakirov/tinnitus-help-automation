@@ -219,6 +219,10 @@
     "bimodal-neuromodulation-for-tinnitus": {
       "slug": "bimodal-neuromodulation-for-tinnitus",
       "title": "Bimodal Neuromodulation for Tinnitus"
+    },
+    "hearing-aids-and-tinnitus": {
+      "slug": "hearing-aids-and-tinnitus",
+      "title": "hearing aids and tinnitus"
     }
   },
   "zen": {
@@ -261,7 +265,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 9,
+    "blog": 10,
     "zen": 1
   }
 }

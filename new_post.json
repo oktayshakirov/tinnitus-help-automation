@@ -2,12 +2,28 @@
   "name": "Tinnitus Help: New Post",
   "nodes": [
     {
-      "parameters": {},
-      "id": "5016146c-e8cd-4dbc-8f07-6e89212678ed",
-      "name": "Manual Trigger",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [-1648, 0]
+      "parameters": {
+        "formTitle": "Tinnitus Help: New Post",
+        "formDescription": "Internal trigger: topic.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "topic",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "39657f9e-a11f-4b09-9010-6bc3179025a3",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        -96
+      ],
+      "webhookId": "9b4e5cfa-844c-458f-a88f-2b99d03cf4c6"
     },
     {
       "parameters": {
@@ -15,17 +31,20 @@
           "string": [
             {
               "name": "topic",
-              "value": "What is Tinnitus"
+              "value": "={{ $json.topic }}"
             }
           ]
         },
         "options": {}
       },
-      "id": "cba8ac09-afe2-49c0-8341-b29249b7af3b",
+      "id": "c82fd4f2-a785-4ced-b3b6-f09191a5cede",
       "name": "Set Post Topic",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
-      "position": [-1440, 0]
+      "position": [
+        80,
+        -96
+      ]
     },
     {
       "parameters": {
@@ -45,11 +64,14 @@
         "asBinaryProperty": false,
         "additionalParameters": {}
       },
-      "id": "19f31974-9b3e-43e8-8471-a6043030b4e4",
+      "id": "e09007ef-148b-4103-b23f-4a8d4eedec16",
       "name": "Get content-database.json",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
-      "position": [-1248, -112],
+      "position": [
+        272,
+        -208
+      ],
       "webhookId": "8af5d58b-af86-47d8-971b-dbf4b40302d7",
       "credentials": {
         "githubApi": {
@@ -76,11 +98,14 @@
         "asBinaryProperty": false,
         "additionalParameters": {}
       },
-      "id": "70aa2361-99e8-404d-8fe0-560be34410e5",
+      "id": "c97eba81-9302-408b-9273-7cefd1a12cb5",
       "name": "Get Guidelines",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
-      "position": [-1248, 96],
+      "position": [
+        272,
+        16
+      ],
       "webhookId": "868cb777-82aa-4244-9260-5987f185246b",
       "credentials": {
         "githubApi": {
@@ -93,21 +118,27 @@
       "parameters": {
         "mode": "wait"
       },
-      "id": "7a4a8cac-c584-48b7-aa1d-5688788dbfa6",
+      "id": "c409adc0-f834-4d3f-9322-5d046951d1f8",
       "name": "Merge DB + Guidelines",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 1,
-      "position": [-1040, 0]
+      "position": [
+        480,
+        -96
+      ]
     },
     {
       "parameters": {
         "functionCode": "function decodeFile(nodeName, parseJson=false) {\n  const node = $node[nodeName].json;\n  if (!node.content) throw new Error(`${nodeName} has no json.content`);\n  const buff = Buffer.from(node.content, 'base64');\n  const text = buff.toString('utf-8');\n  return parseJson ? JSON.parse(text) : text;\n}\n\nconst db = decodeFile(\"Get content-database.json\", true);\nconst guidelinesText = decodeFile(\"Get Guidelines\", false);\nconst { topic } = $node[\"Set Post Topic\"].json;\n\n// Convert database to compact format: key|slug|title\n// This reduces token usage by ~80% while preserving all necessary data\nfunction formatDbCompact(dbObj, category) {\n  return Object.entries(dbObj || {})\n    .map(([key, val]) => {\n      // Prepend category prefix to slug (e.g., /blog/, /zen/)\n      const fullSlug = `/${category}/${val.slug}`;\n      return [key, fullSlug, val.title].join('|');\n    })\n    .join('\\n');\n}\n\nconst compactBlog = formatDbCompact(db.blog, 'blog');\nconst compactZen = formatDbCompact(db.zen, 'zen');\n\nreturn [{\n  json: { \n    db,              // Full database for backend processing\n    guidelinesText,\n    topic, \n    compactBlog,     // Compact format for AI (80% fewer tokens)\n    compactZen\n  }\n}];"
       },
-      "id": "3bad7d86-8ab8-40d9-8ffd-6d80c4b8d254",
+      "id": "444944b1-303b-4ddd-8471-f3eb1cd13bd0",
       "name": "Parse & Prepare Data",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [-848, 0]
+      "position": [
+        672,
+        -96
+      ]
     },
     {
       "parameters": {
@@ -117,7 +148,7 @@
           "messages": [
             {
               "role": "system",
-              "content": "=\"You are an expert tinnitus health writer creating comprehensive, SEO-optimized educational posts for Tinnitus Help.\n\nCRITICAL WORKFLOW REQUIREMENTS:\n- Follow ALL provided guidelines EXACTLY\n- Write ONLY the Markdown body (no frontmatter - frontmatter is generated separately)\n- Include metadata JSON at the end (tags, description, categories)\n- Use MDX components: <Blockquote>, <Highlighter>, <Image>, <AdComponent />\n\nCRITICAL FORMATTING RULES:\n- NEVER include a references section, bibliography, or 'Further reading' section at the end\n- Always include <Blockquote> at the beginning with 2-3 sentence summary\n- Use <Highlighter> tags for all main section headings\n- Place <AdComponent /> 2-3 times throughout the post\n- Use plain ASCII hyphen '-' in prose; never use em dash '—' or en dash '–'\""
+              "content": "=\"You are an expert tinnitus health writer creating comprehensive, SEO-optimized educational posts for Tinnitus Help.\n\nCRITICAL WORKFLOW REQUIREMENTS:\n- Follow ALL provided guidelines EXACTLY\n- Write ONLY the Markdown body (no frontmatter - frontmatter is generated separately)\n- Include metadata JSON at the end (tags, description, categories)\n- Use MDX components: <Blockquote>, <Highlighter>, <Image>, <AdComponent />\n\nCRITICAL FORMATTING RULES:\n- NEVER include a references section, bibliography, or 'Further reading' section at the end\n- Always include <Blockquote> at the beginning with 2-3 sentence summary\n- Use <Highlighter> tags for all main section headings\n- Place <AdComponent /> 2-3 times throughout the post\""
             },
             {
               "content": "=\"Post Topic: {{$json.topic}}  \n\nINTERNAL LINK DATABASES (format: key|slug|title):  \n\nBLOG POSTS:\n{{$json.compactBlog}}\n\nZEN SOUNDS:\n{{$json.compactZen}}\n\n=== GUIDELINES ===  \n{{$json.guidelinesText}}\n\nAfter writing the post, provide the JSON object as specified in the guidelines.\""
@@ -128,10 +159,13 @@
         "options": {},
         "requestOptions": {}
       },
-      "id": "4876ac80-88a9-4750-932d-41456873f7ab",
+      "id": "734fdee9-0d02-4b62-8910-9632db45c263",
       "name": "OpenAI: Generate Body",
       "type": "n8n-nodes-base.openAi",
-      "position": [-624, 0],
+      "position": [
+        896,
+        -96
+      ],
       "typeVersion": 1.1,
       "credentials": {
         "openAiApi": {
@@ -142,23 +176,29 @@
     },
     {
       "parameters": {
-        "functionCode": "const meta = $node[\"Parse & Prepare Data\"].json;\nconst ai = $node[\"OpenAI: Generate Body\"].json;\n\n// Generate slug from topic\nlet slug = meta.topic.toLowerCase()\n  .replace(/^what is /i, '')\n  .replace(/^how to /i, '')\n  .replace(/^understanding /i, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/(^-|-$)/g, '');\n\n// Format date as 'Month DD, YYYY' (e.g., 'July 13, 2023')\nconst dateObj = new Date();\nconst months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];\nconst formattedDate = `${months[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;\nconst order = meta.db.next_orders?.blog || 1;\n\n// Extract metadata from AI response\nlet tags = [];\nlet description = '';\nlet categories = [];\nlet jsonFound = false;\n\ntry {\n  const aiContent = ai.choices?.[0]?.message?.content || ai.content || '';\n  console.log('AI Response length:', aiContent.length);\n  \n  // Look for JSON object in the response\n  const jsonMatch = aiContent.match(/\\{[\\s\\S]*?\"tags\"[\\s\\S]*?\\}/g);\n  if (jsonMatch && jsonMatch.length > 0) {\n    console.log('Found JSON match:', jsonMatch[0].substring(0, 200));\n    \n    // Clean up the JSON string before parsing\n    let jsonString = jsonMatch[0];\n    \n    // Fix common JSON issues\n    jsonString = jsonString\n      .replace(/,(\\s*[}\\]])/g, '$1') // Remove trailing commas\n      .replace(/([^,{}\\s])(\\s*[}\\]])/g, '$1$2') // Ensure proper comma placement\n      .replace(/([^,{}\\s])(\\s*\"[a-zA-Z_][a-zA-Z0-9_]*\"\\s*:)/g, '$1,$2'); // Add missing commas before properties\n    \n    try {\n      const aiData = JSON.parse(jsonString);\n      \n      // Extract all metadata\n      if (aiData.tags && Array.isArray(aiData.tags)) {\n        tags = aiData.tags;\n        console.log('Extracted tags:', tags.length);\n      }\n      \n      if (aiData.description) {\n        description = aiData.description;\n        console.log('Extracted description:', description);\n      }\n      \n      if (aiData.categories && Array.isArray(aiData.categories)) {\n        categories = aiData.categories;\n        console.log('Extracted categories:', categories);\n      }\n      \n      jsonFound = true;\n    } catch (jsonError) {\n      console.log('JSON parsing failed, trying manual extraction:', jsonError.message);\n      \n      // Manual extraction as fallback\n      const tagsMatch = aiContent.match(/\"tags\"\\s*:\\s*\\[([^\\]]+)\\]/);\n      const descMatch = aiContent.match(/\"description\"\\s*:\\s*\"([^\"]+)\"/);\n      const catsMatch = aiContent.match(/\"categories\"\\s*:\\s*\\[([^\\]]+)\\]/);\n      \n      if (tagsMatch) {\n        tags = tagsMatch[1].split(',').map(t => t.trim().replace(/[\"']/g, ''));\n      }\n      \n      if (descMatch) {\n        description = descMatch[1];\n      }\n      \n      if (catsMatch) {\n        categories = catsMatch[1].split(',').map(c => c.trim().replace(/[\"']/g, ''));\n      }\n      \n      if (tags.length > 0 || description) {\n        jsonFound = true;\n        console.log('Manual extraction successful');\n      }\n    }\n  }\n  \n  // Validate we got the required data\n  if (!jsonFound || !description) {\n    throw new Error('AI did not return required JSON with tags and description. Manual review needed.');\n  }\n  \n  if (tags.length < 8) {\n    console.log(`Warning: Only ${tags.length} tags found. Minimum 8 recommended.`);\n  }\n  \n  if (categories.length === 0) {\n    console.log('Warning: No categories found. Using default.');\n    categories = ['Basics'];\n  }\n  \n  // Validate categories against allowed list\n  const allowedCategories = ['Basics', 'Management', 'Research', 'Psychology', 'Nutrition', 'Meditation', 'Sounds'];\n  const invalidCategories = categories.filter(cat => !allowedCategories.includes(cat));\n  if (invalidCategories.length > 0) {\n    console.log(`Warning: Invalid categories found: ${invalidCategories.join(', ')}. Removing them.`);\n    categories = categories.filter(cat => allowedCategories.includes(cat));\n  }\n  if (categories.length === 0) {\n    console.log('No valid categories remaining. Using default.');\n    categories = ['Basics'];\n  }\n  \n} catch (e) {\n  console.log('ERROR parsing AI response:', e.message);\n  throw new Error(`Failed to extract data from AI response: ${e.message}. Please check AI output format.`);\n}\n\n// Build frontmatter (matching tinnitus-blog format)\nconst frontmatterLines = [\n  '---',\n  `title: '${meta.topic}'`,\n  `date: '${formattedDate}'`,\n  `description: '${description}'`,\n  `image: '/images/${slug}.jpg'`,\n  `tags: [${tags.map(t => `'${t}'`).join(', ')}]`\n];\n\nfrontmatterLines.push('---');\n\nconst frontmatter = frontmatterLines.join('\\n');\n\n// Extract just the markdown body (remove any JSON at the end)\nlet body = ai.choices?.[0]?.message?.content || ai.content || '';\n// Remove JSON object if it exists at the end\nbody = body.replace(/\\n\\{[\\s\\S]*\"tags\"[\\s\\S]*\\}$/, '').trim();\n\nreturn [{\n  json: {\n    mdx: `${frontmatter}\\n\\n${body}`,\n    slug,\n    topic: meta.topic,\n    formattedDate,\n    order,\n    db: meta.db,\n    tags,\n    description,\n    categories\n  }\n}];"
+        "functionCode": "const meta = $node[\"Parse & Prepare Data\"].json;\nconst ai = $node[\"OpenAI: Generate Body\"].json;\n\n// Generate slug from topic\nlet slug = meta.topic.toLowerCase()\n  .replace(/^what is /i, '')\n  .replace(/^how to /i, '')\n  .replace(/^understanding /i, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/(^-|-$)/g, '');\n\n// Derive a human-readable, Title-Cased title from the (slug-style) topic.\n// If the author already typed a spaced/capitalized title, keep it verbatim.\nfunction slugToTitle(topic) {\n  if (/[A-Z]/.test(topic)) return topic.trim();\n  const small = new Set(['a','an','and','as','at','but','by','for','from','in','is','nor','of','on','or','per','the','to','via','vs','with']);\n  const acronyms = { airpods:'AirPods', cbd:'CBD', cbt:'CBT', tmj:'TMJ', trt:'TRT', ent:'ENT', tv:'TV', diy:'DIY', adhd:'ADHD', ptsd:'PTSD' };\n  const words = topic.split(/[-\\s]+/).filter(Boolean);\n  return words.map((w, i) => {\n    if (acronyms[w]) return acronyms[w];\n    if (i !== 0 && i !== words.length - 1 && small.has(w)) return w;\n    return w.charAt(0).toUpperCase() + w.slice(1);\n  }).join(' ');\n}\nconst title = slugToTitle(meta.topic);\n// YAML-safe quoting: double-quote when the title contains an apostrophe.\nconst titleYaml = title.includes(\"'\") ? '\"' + title.replace(/\"/g, '\\\\\"') + '\"' : \"'\" + title + \"'\";\n\n// Format date as 'Month DD, YYYY' (e.g., 'July 13, 2023')\nconst dateObj = new Date();\nconst months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];\nconst formattedDate = `${months[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;\nconst order = meta.db.next_orders?.blog || 1;\n\n// Extract metadata from AI response\nlet tags = [];\nlet description = '';\nlet categories = [];\nlet jsonFound = false;\n\ntry {\n  const aiContent = ai.choices?.[0]?.message?.content || ai.content || '';\n  console.log('AI Response length:', aiContent.length);\n  \n  // Look for JSON object in the response\n  const jsonMatch = aiContent.match(/\\{[\\s\\S]*?\"tags\"[\\s\\S]*?\\}/g);\n  if (jsonMatch && jsonMatch.length > 0) {\n    console.log('Found JSON match:', jsonMatch[0].substring(0, 200));\n    \n    // Clean up the JSON string before parsing\n    let jsonString = jsonMatch[0];\n    \n    // Fix common JSON issues\n    jsonString = jsonString\n      .replace(/,(\\s*[}\\]])/g, '$1') // Remove trailing commas\n      .replace(/([^,{}\\s])(\\s*[}\\]])/g, '$1$2') // Ensure proper comma placement\n      .replace(/([^,{}\\s])(\\s*\"[a-zA-Z_][a-zA-Z0-9_]*\"\\s*:)/g, '$1,$2'); // Add missing commas before properties\n    \n    try {\n      const aiData = JSON.parse(jsonString);\n      \n      // Extract all metadata\n      if (aiData.tags && Array.isArray(aiData.tags)) {\n        tags = aiData.tags;\n        console.log('Extracted tags:', tags.length);\n      }\n      \n      if (aiData.description) {\n        description = aiData.description;\n        console.log('Extracted description:', description);\n      }\n      \n      if (aiData.categories && Array.isArray(aiData.categories)) {\n        categories = aiData.categories;\n        console.log('Extracted categories:', categories);\n      }\n      \n      jsonFound = true;\n    } catch (jsonError) {\n      console.log('JSON parsing failed, trying manual extraction:', jsonError.message);\n      \n      // Manual extraction as fallback\n      const tagsMatch = aiContent.match(/\"tags\"\\s*:\\s*\\[([^\\]]+)\\]/);\n      const descMatch = aiContent.match(/\"description\"\\s*:\\s*\"([^\"]+)\"/);\n      const catsMatch = aiContent.match(/\"categories\"\\s*:\\s*\\[([^\\]]+)\\]/);\n      \n      if (tagsMatch) {\n        tags = tagsMatch[1].split(',').map(t => t.trim().replace(/[\"']/g, ''));\n      }\n      \n      if (descMatch) {\n        description = descMatch[1];\n      }\n      \n      if (catsMatch) {\n        categories = catsMatch[1].split(',').map(c => c.trim().replace(/[\"']/g, ''));\n      }\n      \n      if (tags.length > 0 || description) {\n        jsonFound = true;\n        console.log('Manual extraction successful');\n      }\n    }\n  }\n  \n  // Validate we got the required data\n  if (!jsonFound || !description) {\n    throw new Error('AI did not return required JSON with tags and description. Manual review needed.');\n  }\n  \n  if (tags.length < 8) {\n    console.log(`Warning: Only ${tags.length} tags found. Minimum 8 recommended.`);\n  }\n  \n  if (categories.length === 0) {\n    console.log('Warning: No categories found. Using default.');\n    categories = ['Basics'];\n  }\n  \n  // Validate categories against allowed list\n  const allowedCategories = ['Basics', 'Management', 'Research', 'Psychology', 'Nutrition', 'Meditation', 'Sounds'];\n  const invalidCategories = categories.filter(cat => !allowedCategories.includes(cat));\n  if (invalidCategories.length > 0) {\n    console.log(`Warning: Invalid categories found: ${invalidCategories.join(', ')}. Removing them.`);\n    categories = categories.filter(cat => allowedCategories.includes(cat));\n  }\n  if (categories.length === 0) {\n    console.log('No valid categories remaining. Using default.');\n    categories = ['Basics'];\n  }\n  \n} catch (e) {\n  console.log('ERROR parsing AI response:', e.message);\n  throw new Error(`Failed to extract data from AI response: ${e.message}. Please check AI output format.`);\n}\n\ndescription = description.replace(/\\u2014/g, ' - ').replace(/[\\u2013\\u2011]/g, '-').replace(/  +/g, ' ');\n// Safety net for over-long meta descriptions (target 120-135). Trim on a word boundary, no dangling punctuation.\nif (description.length > 155) {\n  description = description.slice(0, 152).replace(/\\s+\\S*$/, '').replace(/[\\s,;:.-]+$/, '');\n}\ntags = (tags || []).slice(0, 3);\n\n// Build frontmatter (matching tinnitus-blog format)\nconst frontmatterLines = [\n  '---',\n  `title: ${titleYaml}`,\n  `date: '${formattedDate}'`,\n  `description: '${description}'`,\n  `image: '/images/${slug}.jpg'`,\n  `tags: [${tags.map(t => `'${t}'`).join(', ')}]`\n];\n\nfrontmatterLines.push('---');\n\nconst frontmatter = frontmatterLines.join('\\n');\n\n// Extract just the markdown body (remove any JSON at the end)\nlet body = ai.choices?.[0]?.message?.content || ai.content || '';\n// Remove JSON object if it exists at the end\nbody = body.replace(/\\s*```(?:json)?\\s*\\{[\\s\\S]*\\}\\s*```\\s*$/i, '');\nbody = body.replace(/\\s*\\{[\\s\\S]*\"(?:description|tags|social)\"[\\s\\S]*\\}\\s*$/i, '').trim();\n\n// Normalize AI punctuation: no em/en dashes or double hyphens; ensure ## on Highlighter headings\nbody = body.replace(/\\u2014/g, ' - ').replace(/[\\u2013\\u2011]/g, '-').replace(/(^|[^-])--(?!-)/g, '$1-').replace(/  +/g, ' ');\nbody = body.replace(/^<Highlighter>/gm, '## <Highlighter>');\n\n// Ads must never sit directly next to an image: relocate offending ads before the conclusion heading\nlet movedAds = 0;\nbody = body.replace(/(<Image[^>]*\\/>)\\s*\\n+\\s*<AdComponent \\/>/g, (m, img) => { movedAds++; return img; });\nbody = body.replace(/<AdComponent \\/>\\s*\\n+\\s*(<Image[^>]*\\/>)/g, (m, img) => { movedAds++; return img; });\nif (movedAds > 0) {\n  const concl = body.match(/^## <Highlighter>Conclusion[^\\n]*$/m);\n  if (concl) body = body.replace(concl[0], '<AdComponent />\\n\\n' + concl[0]);\n}\n\n// Dedupe internal links: keep first occurrence, unlink repeats (keep bold text)\nconst seenLinks = new Set();\nbody = body.replace(/(\\*\\*)?\\[([^\\]]+)\\]\\((\\/[^)]+)\\)(\\*\\*)?/g, (m, b1, text, url, b2) => {\n  if (seenLinks.has(url)) return (b1 || '') + text + (b2 || '');\n  seenLinks.add(url);\n  return m;\n});\n\n// Force the first body image to match the main article image\nbody = body.replace(/<Image\\s+src=\"\\/images\\/[^\"]*\"/, `<Image src=\"/images/${slug}.jpg\"`);\n\nreturn [{\n  json: {\n    mdx: `${frontmatter}\\n\\n${body}`,\n    slug,\n    topic: meta.topic,\n    title,\n    formattedDate,\n    order,\n    db: meta.db,\n    tags,\n    description,\n    categories\n  }\n}];"
       },
-      "id": "52def2b7-c7ee-40de-89a7-23703aad370c",
+      "id": "a4f0ff8c-8b9b-4f34-ad88-cb1f66f5cecd",
       "name": "Build Frontmatter + MDX",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [-432, 0]
+      "position": [
+        1088,
+        -96
+      ]
     },
     {
       "parameters": {
         "functionCode": "const data = $json;\nconst filePath = `${data.slug}.mdx`;\nconst commitMessage = `New post: ${data.topic}`;\n\nreturn [{\n  json: {\n    ...data,\n    filePath,\n    commitMessage\n  }\n}];"
       },
-      "id": "6eb633c8-c9e4-4b92-bad7-349506e15f19",
+      "id": "0bf13f65-035d-45e4-8cc4-e9ef558975ec",
       "name": "Prepare File Data",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [-224, 0]
+      "position": [
+        1296,
+        -96
+      ]
     },
     {
       "parameters": {
@@ -177,11 +217,14 @@
         "fileContent": "={{$json.mdx}}",
         "commitMessage": "={{$json.commitMessage}}"
       },
-      "id": "08ac5772-b618-4793-b8b3-18c60f39c44e",
+      "id": "170b11f7-dc18-4a69-8c34-6748761b9698",
       "name": "Write New Post MDX",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
-      "position": [-32, 0],
+      "position": [
+        1488,
+        -96
+      ],
       "webhookId": "0659f16d-29c4-4df0-b762-51f61500a898",
       "credentials": {
         "githubApi": {
@@ -192,13 +235,16 @@
     },
     {
       "parameters": {
-        "functionCode": "// Validate file write was successful\nconst fileResult = $input.first().json;\nif (!fileResult || fileResult.error) {\n  throw new Error(`File write failed: ${fileResult?.error || 'Unknown error'}`);\n}\n\n// Get post data from Build Frontmatter + MDX node\nconst postData = $node[\"Build Frontmatter + MDX\"].json;\nif (!postData || !postData.topic || !postData.slug) {\n  throw new Error('Post data not found or incomplete');\n}\n\n// Get and validate database data\nconst dbData = postData.db;\nif (!dbData) {\n  throw new Error('Database data not found');\n}\n\n// Create updated database with proper structure\nconst updatedDb = {\n  ...dbData,\n  blog: { ...(dbData.blog || {}) },\n  next_orders: { ...(dbData.next_orders || { blog: 1 }) }\n};\n\n// Use slug as key (matching existing structure)\nconst postKey = postData.slug;\n\n// Check if post already exists\nif (updatedDb.blog[postKey]) {\n  throw new Error(`Post '${postData.topic}' already exists in database`);\n}\n\n// Add new post to database\nupdatedDb.blog[postKey] = {\n  slug: postData.slug,\n  title: postData.topic\n};\n\n// Increment next order counter\nupdatedDb.next_orders.blog = (updatedDb.next_orders.blog || 0) + 1;\n\n// Return success with updated database\nreturn [{ \n  json: { \n    db: updatedDb, \n    fileSuccess: true, \n    dbSuccess: true,\n    postAdded: postKey,\n    topic: postData.topic\n  } \n}];"
+        "functionCode": "// Validate file write was successful\nconst fileResult = $input.first().json;\nif (!fileResult || fileResult.error) {\n  throw new Error(`File write failed: ${fileResult?.error || 'Unknown error'}`);\n}\n\n// Get post data from Build Frontmatter + MDX node\nconst postData = $node[\"Build Frontmatter + MDX\"].json;\nif (!postData || !postData.topic || !postData.slug) {\n  throw new Error('Post data not found or incomplete');\n}\n\n// Get and validate database data\nconst dbData = postData.db;\nif (!dbData) {\n  throw new Error('Database data not found');\n}\n\n// Create updated database with proper structure\nconst updatedDb = {\n  ...dbData,\n  blog: { ...(dbData.blog || {}) },\n  next_orders: { ...(dbData.next_orders || { blog: 1 }) }\n};\n\n// Use slug as key (matching existing structure)\nconst postKey = postData.slug;\n\n// Check if post already exists\nif (updatedDb.blog[postKey]) {\n  throw new Error(`Post '${postData.topic}' already exists in database`);\n}\n\n// Add new post to database\nupdatedDb.blog[postKey] = {\n  slug: postData.slug,\n    title: postData.title || postData.topic\n};\n\n// Increment next order counter\nupdatedDb.next_orders.blog = (updatedDb.next_orders.blog || 0) + 1;\n\n// Return success with updated database\nreturn [{ \n  json: { \n    db: updatedDb, \n    fileSuccess: true, \n    dbSuccess: true,\n    postAdded: postKey,\n    topic: postData.topic\n  } \n}];"
       },
-      "id": "1b700528-0688-48f2-a7aa-ca0a81bfb763",
+      "id": "dc2b2aa2-8254-4d56-8d7f-3f10d380233a",
       "name": "Update Database",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [160, 0]
+      "position": [
+        1680,
+        -96
+      ]
     },
     {
       "parameters": {
@@ -218,11 +264,14 @@
         "fileContent": "={{JSON.stringify($json.db, null, 2)}}",
         "commitMessage": "=Update posts DB after adding {{$json.topic || 'new post'}}"
       },
-      "id": "a638ac05-d695-424a-a41e-3d7198e4e93f",
+      "id": "6a9f5349-2d72-4d00-b23f-cc913c029aed",
       "name": "Write Updated DB JSON",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
-      "position": [368, 0],
+      "position": [
+        1888,
+        -96
+      ],
       "webhookId": "c216a840-93e7-41f1-99d2-215bce62e058",
       "credentials": {
         "githubApi": {
@@ -234,17 +283,6 @@
   ],
   "pinData": {},
   "connections": {
-    "Manual Trigger": {
-      "main": [
-        [
-          {
-            "node": "Set Post Topic",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Set Post Topic": {
       "main": [
         [
@@ -359,15 +397,27 @@
           }
         ]
       ]
+    },
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Post Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
-  "settings": {},
-  "versionId": "268ec9ca-e70b-4b83-ac8c-0306eb2ea227",
-  "meta": {
-    "instanceId": "002b5e092f04f4d75aa57fd214532db5fa3d65fe608d265bda2ed541d575f595"
+  "active": true,
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v0",
+    "availableInMCP": true
   },
-  "id": "pEfGTfVz5FdtLTGM",
+  "versionId": "c7d81ed2-4701-48c7-bc45-c32125795a5d",
+  "meta": null,
+  "id": "pddxBAmv2k2nSBv2",
   "tags": []
 }
-

@@ -24,6 +24,7 @@ Add contextual sections as useful (Myths, Risk Factors, When to See a Doctor, Sa
 ## Internal linking (STRICT)
 - **8–15 links total. Link each page AT MOST ONCE. Never repeat a link or force one** — link only where it genuinely helps the reader.
 - Natural, in-sentence format: `**[managing tinnitus](/blog/managing-tinnitus)**`. Never "see our guide on…".
+- **Never bold a page's name without linking it.** Once a page is linked (and it may only be linked once), do not write its title again as bare `**bold**` text anywhere else — e.g. a later `**managing tinnitus**` or `**the power of white noise**` with no `[](…)` renders as a phantom link and reads as broken. Refer to it in plain prose instead ("steady management habits", "sound enrichment"). This applies to the conclusion especially: its next-step references must be real links or plain words, never bold-only echoes.
 - Use ONLY slugs from the provided databases. Format: blog → `/blog/{slug}`, zen → `/zen/{slug}`, app → `/app`.
 - Distribute across the post; max one link per sentence.
 - Good targets: core concepts (what-is-tinnitus, brain/neural), related conditions (stress, sleep, anxiety), management (managing-tinnitus, white-noise, CBT), sound therapy (zen sounds), the app for tracking.

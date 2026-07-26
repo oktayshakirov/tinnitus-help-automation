@@ -223,6 +223,10 @@
     "hearing-aids-and-tinnitus": {
       "slug": "hearing-aids-and-tinnitus",
       "title": "hearing aids and tinnitus"
+    },
+    "earwax-and-tinnitus": {
+      "slug": "earwax-and-tinnitus",
+      "title": "Earwax and Tinnitus"
     }
   },
   "zen": {
@@ -265,7 +269,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 10,
+    "blog": 11,
     "zen": 1
   }
 }

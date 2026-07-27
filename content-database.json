@@ -227,6 +227,10 @@
     "earwax-and-tinnitus": {
       "slug": "earwax-and-tinnitus",
       "title": "Earwax and Tinnitus"
+    },
+    "hyperacusis-and-tinnitus": {
+      "slug": "hyperacusis-and-tinnitus",
+      "title": "Hyperacusis and Tinnitus"
     }
   },
   "zen": {
@@ -269,7 +273,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 11,
+    "blog": 12,
     "zen": 1
   }
 }

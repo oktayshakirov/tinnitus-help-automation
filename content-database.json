@@ -231,6 +231,10 @@
     "hyperacusis-and-tinnitus": {
       "slug": "hyperacusis-and-tinnitus",
       "title": "Hyperacusis and Tinnitus"
+    },
+    "sudden-hearing-loss-and-tinnitus": {
+      "slug": "sudden-hearing-loss-and-tinnitus",
+      "title": "Sudden Hearing Loss and Tinnitus"
     }
   },
   "zen": {
@@ -273,7 +277,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 12,
+    "blog": 13,
     "zen": 1
   }
 }

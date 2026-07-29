@@ -235,6 +235,10 @@
     "sudden-hearing-loss-and-tinnitus": {
       "slug": "sudden-hearing-loss-and-tinnitus",
       "title": "Sudden Hearing Loss and Tinnitus"
+    },
+    "menopause-and-tinnitus": {
+      "slug": "menopause-and-tinnitus",
+      "title": "Menopause and Tinnitus"
     }
   },
   "zen": {
@@ -277,7 +281,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 13,
+    "blog": 14,
     "zen": 1
   }
 }

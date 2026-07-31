@@ -239,6 +239,10 @@
     "menopause-and-tinnitus": {
       "slug": "menopause-and-tinnitus",
       "title": "Menopause and Tinnitus"
+    },
+    "tinnitus-and-pregnancy": {
+      "slug": "tinnitus-and-pregnancy",
+      "title": "Tinnitus And Pregnancy"
     }
   },
   "zen": {
@@ -281,7 +285,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 14,
+    "blog": 15,
     "zen": 1
   }
 }

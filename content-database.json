@@ -243,6 +243,10 @@
     "tinnitus-and-pregnancy": {
       "slug": "tinnitus-and-pregnancy",
       "title": "Tinnitus And Pregnancy"
+    },
+    "blood-pressure-and-tinnitus": {
+      "slug": "blood-pressure-and-tinnitus",
+      "title": "Blood Pressure and Tinnitus"
     }
   },
   "zen": {
@@ -285,7 +289,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 15,
+    "blog": 16,
     "zen": 1
   }
 }

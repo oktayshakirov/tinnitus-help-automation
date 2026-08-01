@@ -247,6 +247,10 @@
     "blood-pressure-and-tinnitus": {
       "slug": "blood-pressure-and-tinnitus",
       "title": "Blood Pressure and Tinnitus"
+    },
+    "do-antidepressants-make-tinnitus-worse": {
+      "slug": "do-antidepressants-make-tinnitus-worse",
+      "title": "Do Antidepressants Make Tinnitus Worse?"
     }
   },
   "zen": {
@@ -289,7 +293,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 16,
+    "blog": 17,
     "zen": 1
   }
 }

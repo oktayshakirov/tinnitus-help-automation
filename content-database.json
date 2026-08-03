@@ -251,6 +251,10 @@
     "do-antidepressants-make-tinnitus-worse": {
       "slug": "do-antidepressants-make-tinnitus-worse",
       "title": "Do Antidepressants Make Tinnitus Worse?"
+    },
+    "why-does-tinnitus-spike": {
+      "slug": "why-does-tinnitus-spike",
+      "title": "Why Does Tinnitus Spike"
     }
   },
   "zen": {
@@ -293,7 +297,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 17,
+    "blog": 18,
     "zen": 1
   }
 }

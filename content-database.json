@@ -255,6 +255,10 @@
     "why-does-tinnitus-spike": {
       "slug": "why-does-tinnitus-spike",
       "title": "Why Does Tinnitus Spike"
+    },
+    "does-magnesium-help-tinnitus": {
+      "slug": "does-magnesium-help-tinnitus",
+      "title": "Does Magnesium Help Tinnitus?"
     }
   },
   "zen": {
@@ -297,7 +301,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 18,
+    "blog": 19,
     "zen": 1
   }
 }

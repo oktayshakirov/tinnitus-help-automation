@@ -259,6 +259,10 @@
     "does-magnesium-help-tinnitus": {
       "slug": "does-magnesium-help-tinnitus",
       "title": "Does Magnesium Help Tinnitus?"
+    },
+    "tinnitus-in-children": {
+      "slug": "tinnitus-in-children",
+      "title": "Tinnitus in Children"
     }
   },
   "zen": {
@@ -301,7 +305,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 19,
+    "blog": 20,
     "zen": 1
   }
 }

@@ -263,6 +263,10 @@
     "tinnitus-in-children": {
       "slug": "tinnitus-in-children",
       "title": "Tinnitus in Children"
+    },
+    "explain-tinnitus-to-others": {
+      "slug": "explain-tinnitus-to-others",
+      "title": "How To Explain Tinnitus To Others?"
     }
   },
   "zen": {
@@ -305,7 +309,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 20,
+    "blog": 21,
     "zen": 1
   }
 }

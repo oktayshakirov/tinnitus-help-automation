@@ -4,7 +4,7 @@
     {
       "parameters": {
         "formTitle": "Tinnitus Help: Share Video",
-        "formDescription": "Internal trigger: YouTube video id or URL.",
+        "formDescription": "YouTube video id or URL, plus an optional topic (the subject of the video, two or three words).",
         "formFields": {
           "values": [
             {
@@ -12,7 +12,7 @@
               "requiredField": true
             },
             {
-              "fieldLabel": "cta",
+              "fieldLabel": "topic",
               "requiredField": false
             }
           ]
@@ -31,7 +31,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = String($json.videoId ?? $json['field-0'] ?? '').trim();\nconst m = raw.match(/(?:v=|youtu\\.be\\/|shorts\\/|embed\\/|live\\/)([A-Za-z0-9_-]{11})/);\nconst id = m ? m[1] : raw;\nif (!/^[A-Za-z0-9_-]{11}$/.test(id)) {\n  throw new Error(`Not a YouTube video id or URL: ${raw || '(empty)'}`);\n}\nreturn [{ json: {\n  videoId: id,\n  url: `https://www.youtube.com/watch?v=${id}`,\n  cta: String($json.cta ?? $json['field-1'] ?? '').trim(),\n} }];\n"
+        "jsCode": "const raw = String($json.videoId ?? $json['field-0'] ?? '').trim();\nconst m = raw.match(/(?:v=|youtu\\.be\\/|shorts\\/|embed\\/|live\\/)([A-Za-z0-9_-]{11})/);\nconst id = m ? m[1] : raw;\nif (!/^[A-Za-z0-9_-]{11}$/.test(id)) {\n  throw new Error(`Not a YouTube video id or URL: ${raw || '(empty)'}`);\n}\nreturn [{ json: {\n  videoId: id,\n  url: `https://www.youtube.com/watch?v=${id}`,\n  topic: String($json.topic ?? $json['field-1'] ?? '').trim(),\n} }];\n"
       },
       "id": "56d7d2d9-8733-5192-aea9-2be05d5ff334",
       "name": "Normalise Input",
@@ -58,7 +58,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const info = $json;                       // the oEmbed response\nconst v = $('Normalise Input').item.json;\nconst title = (info.title || '').trim();\nconst cta = v.cta || 'Watch the full video on YouTube';\n\n// Facebook and Telegram both unfurl the URL into a player card, so the text\n// stays short and does not repeat what the card already shows.\nconst message = `${title}\\n\\n${cta} \ud83d\udc47`;\n\nreturn [{ json: {\n  videoId: v.videoId,\n  url: v.url,\n  title,\n  message,\n  facebook: message,\n  telegram: `${message}\\n${v.url}`,\n  // maxres is the 1280x720 frame and exists for every video; hq is the\n  // fallback for the rare one that has no maxres yet.\n  storyImage: `https://i.ytimg.com/vi/${v.videoId}/maxresdefault.jpg`,\n} }];\n"
+        "jsCode": "const info = $json;                       // the oEmbed response\nconst v = $('Normalise Input').item.json;\nconst title = (info.title || '').trim();\n\n// **Do not put the title in the caption.** Facebook and Telegram both unfurl\n// the URL into a card that already carries the title, the description and the\n// thumbnail, so repeating it prints the same sentence twice in one post. The\n// caption's only job is the human line the card cannot supply.\n//\n// The subject is typed into the `topic` field. Failing that it is guessed from\n// a `Subject: hook` or `hook | Subject` title, which is this channel's habit\n// and not a rule \u2014 \"Does Tinnitus Go Away? Temporary vs Chronic\" has no\n// subject to find, so the generic line is the third branch rather than an\n// error. Guessing is a convenience; typing two words is the reliable path.\nlet topic = v.topic;\nif (!topic) {\n  const colon = title.match(/^([^:]{3,40}):\\s/);\n  const pipe = title.match(/\\|\\s*(.{3,40})$/);\n  topic = (colon && colon[1].trim()) || (pipe && pipe[1].trim()) || '';\n}\n\nconst message = topic\n  ? `New video about ${topic} \ud83d\udc47`\n  : `New video is up on YouTube \ud83d\udc47`;\n\nreturn [{ json: {\n  videoId: v.videoId,\n  url: v.url,\n  title,\n  topic,\n  message,\n  facebook: message,\n  telegram: `${message}\\n${v.url}`,\n} }];\n"
       },
       "id": "c52f0eca-5d08-5af8-9e2e-901c31f5ce5c",
       "name": "Format Video Post",

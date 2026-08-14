@@ -271,6 +271,10 @@
     "tinnitus-and-air-travel": {
       "slug": "tinnitus-and-air-travel",
       "title": "Tinnitus And Air Travel"
+    },
+    "vitamin-b12-deficiency-and-tinnitus": {
+      "slug": "vitamin-b12-deficiency-and-tinnitus",
+      "title": "Vitamin B12 Deficiency And Tinnitus"
     }
   },
   "zen": {
@@ -313,7 +317,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 22,
+    "blog": 23,
     "zen": 1
   }
 }

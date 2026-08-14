@@ -1,0 +1,189 @@
+{
+  "name": "Tinnitus Help: Share Video",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Tinnitus Help: Share Video",
+        "formDescription": "Internal trigger: YouTube video id or URL.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "videoId",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "cta",
+              "requiredField": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "375b3a30-bd59-5963-a834-47a03020c6f8",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -260,
+        0
+      ],
+      "webhookId": "7838e1d1-e1e5-5c15-a32b-60fcac1e65c5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = String($json.videoId ?? $json['field-0'] ?? '').trim();\nconst m = raw.match(/(?:v=|youtu\\.be\\/|shorts\\/|embed\\/|live\\/)([A-Za-z0-9_-]{11})/);\nconst id = m ? m[1] : raw;\nif (!/^[A-Za-z0-9_-]{11}$/.test(id)) {\n  throw new Error(`Not a YouTube video id or URL: ${raw || '(empty)'}`);\n}\nreturn [{ json: {\n  videoId: id,\n  url: `https://www.youtube.com/watch?v=${id}`,\n  cta: String($json.cta ?? $json['field-1'] ?? '').trim(),\n} }];\n"
+      },
+      "id": "56d7d2d9-8733-5192-aea9-2be05d5ff334",
+      "name": "Normalise Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.youtube.com/oembed?url={{ encodeURIComponent($json.url) }}&format=json",
+        "options": {}
+      },
+      "id": "88401f3f-cf77-5c79-b1e8-99dda5ed7c8d",
+      "name": "Fetch Video Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        180,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const info = $json;                       // the oEmbed response\nconst v = $('Normalise Input').item.json;\nconst title = (info.title || '').trim();\nconst cta = v.cta || 'Watch the full video on YouTube';\n\n// Facebook and Telegram both unfurl the URL into a player card, so the text\n// stays short and does not repeat what the card already shows.\nconst message = `${title}\\n\\n${cta} \ud83d\udc47`;\n\nreturn [{ json: {\n  videoId: v.videoId,\n  url: v.url,\n  title,\n  message,\n  facebook: message,\n  telegram: `${message}\\n${v.url}`,\n  // maxres is the 1280x720 frame and exists for every video; hq is the\n  // fallback for the rare one that has no maxres yet.\n  storyImage: `https://i.ytimg.com/vi/${v.videoId}/maxresdefault.jpg`,\n} }];\n"
+      },
+      "id": "c52f0eca-5d08-5af8-9e2e-901c31f5ce5c",
+      "name": "Format Video Post",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "feed",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "={{ $json.facebook }}"
+              },
+              {
+                "name": "link",
+                "value": "={{ $json.url }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c3854a0f-56c7-5c79-a30c-57193ce3d43e",
+      "name": "Facebook Post",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -180
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "Ydx1TfHeHlMX2ILQ",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "@tinnitushelpme",
+        "text": "={{ $json.telegram }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_web_page_preview": false
+        }
+      },
+      "id": "94d07cef-9745-5c5a-9f3a-a962fa6a4ffd",
+      "name": "Telegram Post",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        0
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "wvvr0VqigaV0y9Pc",
+          "name": "Telegram (TinnitusHelp)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalise Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Input": {
+      "main": [
+        [
+          {
+            "node": "Fetch Video Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Video Info": {
+      "main": [
+        [
+          {
+            "node": "Format Video Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Video Post": {
+      "main": [
+        [
+          {
+            "node": "Facebook Post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telegram Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  }
+}

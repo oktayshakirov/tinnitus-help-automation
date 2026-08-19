@@ -58,7 +58,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const info = $json;                       // the oEmbed response\nconst v = $('Normalise Input').item.json;\nconst title = (info.title || '').trim();\n\n// **Do not put the title in the caption.** Facebook and Telegram both unfurl\n// the URL into a card that already carries the title, the description and the\n// thumbnail, so repeating it prints the same sentence twice in one post. The\n// caption's only job is the human line the card cannot supply.\n//\n// The subject is typed into the `topic` field. Failing that it is guessed from\n// a `Subject: hook` or `hook | Subject` title, which is this channel's habit\n// and not a rule \u2014 \"Does Tinnitus Go Away? Temporary vs Chronic\" has no\n// subject to find, so the generic line is the third branch rather than an\n// error. Guessing is a convenience; typing two words is the reliable path.\nlet topic = v.topic;\nif (!topic) {\n  const colon = title.match(/^([^:]{3,40}):\\s/);\n  const pipe = title.match(/\\|\\s*(.{3,40})$/);\n  topic = (colon && colon[1].trim()) || (pipe && pipe[1].trim()) || '';\n}\n\nconst message = topic\n  ? `New video about ${topic} \ud83d\udc47`\n  : `New video is up on YouTube \ud83d\udc47`;\n\nreturn [{ json: {\n  videoId: v.videoId,\n  url: v.url,\n  title,\n  topic,\n  message,\n  facebook: message,\n  telegram: `${message}\\n${v.url}`,\n} }];\n"
+        "jsCode": "const info = $json;                       // the oEmbed response\nconst v = $('Normalise Input').item.json;\nconst title = (info.title || '').trim();\n\n// **Do not put the title in the caption.** Facebook and Telegram both unfurl\n// the URL into a card that already carries the title, the description and the\n// thumbnail, so repeating it prints the same sentence twice in one post. The\n// caption's only job is the human line the card cannot supply.\n//\n// The subject is typed into the `topic` field. Failing that it is guessed from\n// a `Subject: hook` or `hook | Subject` title, which is this channel's habit\n// and not a rule \u2014 \"Does Tinnitus Go Away? Temporary vs Chronic\" has no\n// subject to find, so the generic line is the third branch rather than an\n// error. Guessing is a convenience; typing two words is the reliable path.\nlet topic = v.topic;\nif (!topic) {\n  const colon = title.match(/^([^:]{3,40}):\\s/);\n  const pipe = title.match(/\\|\\s*(.{3,40})$/);\n  topic = (colon && colon[1].trim()) || (pipe && pipe[1].trim()) || '';\n}\n\nconst message = topic\n  ? `New video about ${topic} \ud83d\udc47`\n  : `New video is up on YouTube \ud83d\udc47`;\n\n// Telegram posts in HTML parse mode (see the Telegram node), so the three\n// characters HTML reserves have to be escaped. Facebook takes the raw text \u2014\n// it does no markup parsing at all, and escaping there would print \"&amp;\".\nconst esc = (t) => t.replace(/&/g, '&amp;')\n                    .replace(/</g, '&lt;')\n                    .replace(/>/g, '&gt;');\n\nreturn [{ json: {\n  videoId: v.videoId,\n  url: v.url,\n  title,\n  topic,\n  message,\n  facebook: message,\n  telegram: `${esc(message)}\\n${v.url}`,\n} }];\n"
       },
       "id": "c52f0eca-5d08-5af8-9e2e-901c31f5ce5c",
       "name": "Format Video Post",
@@ -111,7 +111,8 @@
         "text": "={{ $json.telegram }}",
         "additionalFields": {
           "appendAttribution": false,
-          "disable_web_page_preview": false
+          "disable_web_page_preview": false,
+          "parse_mode": "HTML"
         }
       },
       "id": "94d07cef-9745-5c5a-9f3a-a962fa6a4ffd",

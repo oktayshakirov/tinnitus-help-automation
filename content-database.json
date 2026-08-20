@@ -275,6 +275,10 @@
     "vitamin-b12-deficiency-and-tinnitus": {
       "slug": "vitamin-b12-deficiency-and-tinnitus",
       "title": "Vitamin B12 Deficiency And Tinnitus"
+    },
+    "how-artificial-sweeteners-may-affect-your-tinnitus": {
+      "slug": "how-artificial-sweeteners-may-affect-your-tinnitus",
+      "title": "How Artificial Sweeteners May Affect Your Tinnitus?"
     }
   },
   "zen": {
@@ -317,7 +321,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 23,
+    "blog": 24,
     "zen": 1
   }
 }

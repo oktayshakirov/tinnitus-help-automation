@@ -1,0 +1,1173 @@
+{
+  "id": "1GTSF6izfwA1gpig",
+  "name": "Tinnitus Help: Publish Reel",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Tinnitus Help: Publish Reel",
+        "formDescription": "Publishes one vertical video as an Instagram Reel and a Facebook Reel. Both URLs must be publicly reachable for the length of the run.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "videoUrl",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "coverUrl",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "caption",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "durationSeconds",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {},
+        "path": "55cc4d87-138e-40ac-870c-e4dbcdef8b9c"
+      },
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -460,
+        300
+      ],
+      "id": "a3db4acf-4bf0-43af-943f-15fecdeff251",
+      "webhookId": "55cc4d87-138e-40ac-870c-e4dbcdef8b9c"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The form gives us field labels when triggered from the browser and `field-N`\n// when triggered over HTTP. Read both: a run triggered by index that silently\n// produced nulls is exactly how a previous workflow published an article about\n// the wrong subject.\nconst j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst coverUrl = pick('coverUrl', 1);\nconst caption  = pick('caption', 2);\nconst duration = Number(pick('durationSeconds', 3) || '0');\n\nfor (const [name, value] of [['videoUrl', videoUrl], ['coverUrl', coverUrl]]) {\n  if (!/^https:\\/\\//.test(value)) {\n    throw new Error(`${name} must be a public https URL, got: ${value || '(empty)'}`);\n  }\n}\nif (!caption) throw new Error('caption is empty. A Reel published with no caption cannot be edited into one later.');\n\n// Facebook Reels are 3 to 90 seconds. Instagram allows far longer, but this\n// workflow posts the same file to both, so the tighter limit is the real one.\n// Checked here rather than discovered after the bytes have been uploaded.\nif (!Number.isFinite(duration) || duration <= 0) {\n  throw new Error('durationSeconds is required so the 90 second Facebook Reels limit can be checked before uploading.');\n}\nif (duration < 3 || duration > 90) {\n  throw new Error(`This video is ${duration}s. Facebook Reels accepts 3 to 90 seconds, so it cannot be published as a Reel.`);\n}\n\nreturn [{ json: { videoUrl, coverUrl, caption, duration } }];"
+      },
+      "name": "Normalise Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        300
+      ],
+      "id": "8a2c338e-ee24-449d-afa5-06866bd658c1"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "17841477062009382",
+        "edge": "media",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "media_type",
+                "value": "REELS"
+              },
+              {
+                "name": "video_url",
+                "value": "={{ $json.videoUrl }}"
+              },
+              {
+                "name": "cover_url",
+                "value": "={{ $json.coverUrl }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $json.caption }}"
+              },
+              {
+                "name": "share_to_feed",
+                "value": "true"
+              }
+            ]
+          }
+        }
+      },
+      "name": "IG Create Container",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        300
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "39fc2fbb-c90a-4229-a678-63bb68a50864"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "name": "Wait for Encoding",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "3e0824f7-f85f-465e-b7a3-a9324fbd96f4",
+      "id": "70ec3029-e059-4053-8a24-4129d6440104"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "GET",
+        "graphApiVersion": "v23.0",
+        "node": "={{ $('IG Create Container').item.json.id }}",
+        "edge": "",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "fields",
+                "value": "status_code,status"
+              }
+            ]
+          }
+        }
+      },
+      "name": "IG Container Status",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        420,
+        300
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "8daa0edd-3d05-4e07-bdc7-6947d319e12f"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "finished",
+              "leftValue": "={{ $json.status_code }}",
+              "rightValue": "FINISHED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Encoded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        300
+      ],
+      "id": "8f812643-ab19-4817-9388-30dd841e051c"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Instagram encodes the video before the container can be published. Polling\n// forever would hang the run, so cap it: 20 attempts at 15s is five minutes,\n// well past the normal encode time for a short.\nconst attempt = ($runIndex ?? 0) + 1;\nif (attempt >= 20) {\n  const status = $('IG Container Status').item.json.status_code;\n  throw new Error(`Instagram container still ${status} after ${attempt} checks. Nothing was published; check the Meta status page and retry.`);\n}\nreturn $input.all();"
+      },
+      "name": "Retry Guard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        500
+      ],
+      "id": "7d1cc8d9-e7a0-4ec7-9fe3-dee2d6fc89e5"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "17841477062009382",
+        "edge": "media_publish",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "creation_id",
+                "value": "={{ $('IG Create Container').item.json.id }}"
+              }
+            ]
+          }
+        }
+      },
+      "name": "IG Publish",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        880,
+        200
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "ddbb706d-67e6-40f4-a502-0815be1ca91c"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "video_reels",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "upload_phase",
+                "value": "start"
+              }
+            ]
+          }
+        }
+      },
+      "name": "FB Reel Start",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        200
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "2ec6b83e-05cb-4e4b-92da-78726db3152a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://rupload.facebook.com/video-upload/v23.0/{{ $json.video_id }}",
+        "authentication": "predefinedCredentialType",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "file_url",
+              "value": "={{ $('Normalise Input').item.json.videoUrl }}"
+            }
+          ]
+        },
+        "options": {},
+        "nodeCredentialType": "facebookGraphApi"
+      },
+      "name": "FB Reel Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        200
+      ],
+      "id": "14d03941-ea8b-4ab6-be76-db4da80f37b7",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "video_reels",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "video_id",
+                "value": "={{ $('FB Reel Start').item.json.video_id }}"
+              },
+              {
+                "name": "upload_phase",
+                "value": "finish"
+              },
+              {
+                "name": "video_state",
+                "value": "PUBLISHED"
+              },
+              {
+                "name": "description",
+                "value": "={{ $('Normalise Input').item.json.caption }}"
+              }
+            ]
+          }
+        }
+      },
+      "name": "FB Reel Finish",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        200
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "85bb70d3-d4b2-4dd6-b8b5-37d6f21e79ec"
+    },
+    {
+      "parameters": {
+        "jsCode": "// One place to read what actually happened. Both platforms report success\n// differently \u2014 Instagram returns the published media id, Facebook Reels\n// returns {success:true} and the id came back in the start phase.\nconst v = $('Normalise Input').item.json;\nreturn [{ json: {\n  instagramMediaId: $('IG Publish').item.json.id ?? null,\n  facebookVideoId: $('FB Reel Start').item.json.video_id ?? null,\n  facebookFinished: $('FB Reel Finish').item.json.success === true,\n  caption: v.caption,\n  durationSeconds: v.duration,\n  // Cosmetic and deliberately non-fatal: both cover nodes are\n  // continueRegularOutput, because they run *after* the Reel is\n  // already live on both platforms and must never fail a published run.\n  facebookCoverSet: $('FB Set Reel Cover').item.json?.id != null\n                 || $('FB Set Reel Cover').item.json?.success === true,\n} }];"
+      },
+      "name": "Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        200
+      ],
+      "id": "88c7e3dd-9c15-48da-97f7-17db0d675cc4"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Normalise Input').item.json.coverUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "cover"
+            }
+          }
+        }
+      },
+      "id": "fb-fetch-cover-node-0001",
+      "name": "FB Fetch Cover",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1740,
+        200
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v23.0/{{ $('FB Reel Start').item.json.video_id }}/thumbnails",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "is_preferred",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "source",
+              "inputDataFieldName": "cover"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb-set-reel-cover-node-01",
+      "name": "FB Set Reel Cover",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1940,
+        200
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalise Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Input": {
+      "main": [
+        [
+          {
+            "node": "IG Create Container",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Create Container": {
+      "main": [
+        [
+          {
+            "node": "Wait for Encoding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Encoding": {
+      "main": [
+        [
+          {
+            "node": "IG Container Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Container Status": {
+      "main": [
+        [
+          {
+            "node": "Encoded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encoded?": {
+      "main": [
+        [
+          {
+            "node": "IG Publish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retry Guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Guard": {
+      "main": [
+        [
+          {
+            "node": "Wait for Encoding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Publish": {
+      "main": [
+        [
+          {
+            "node": "FB Reel Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Reel Start": {
+      "main": [
+        [
+          {
+            "node": "FB Reel Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Reel Upload": {
+      "main": [
+        [
+          {
+            "node": "FB Reel Finish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Reel Finish": {
+      "main": [
+        [
+          {
+            "node": "FB Fetch Cover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Fetch Cover": {
+      "main": [
+        [
+          {
+            "node": "FB Set Reel Cover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Set Reel Cover": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "activeVersionId": "a2589751-1918-464a-8511-7b7f40aab041",
+  "versionCounter": 4,
+  "sourceWorkflowId": null,
+  "activeVersion": {
+    "updatedAt": "2026-08-23T14:53:08.942Z",
+    "createdAt": "2026-08-23T14:53:08.942Z",
+    "versionId": "a2589751-1918-464a-8511-7b7f40aab041",
+    "workflowId": "1GTSF6izfwA1gpig",
+    "nodes": [
+      {
+        "parameters": {
+          "formTitle": "Tinnitus Help: Publish Reel",
+          "formDescription": "Publishes one vertical video as an Instagram Reel and a Facebook Reel. Both URLs must be publicly reachable for the length of the run.",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "videoUrl",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "coverUrl",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "caption",
+                "fieldType": "textarea",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "durationSeconds",
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {},
+          "path": "55cc4d87-138e-40ac-870c-e4dbcdef8b9c"
+        },
+        "name": "Form Trigger",
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.2,
+        "position": [
+          -460,
+          300
+        ],
+        "id": "a3db4acf-4bf0-43af-943f-15fecdeff251",
+        "webhookId": "55cc4d87-138e-40ac-870c-e4dbcdef8b9c"
+      },
+      {
+        "parameters": {
+          "jsCode": "// The form gives us field labels when triggered from the browser and `field-N`\n// when triggered over HTTP. Read both: a run triggered by index that silently\n// produced nulls is exactly how a previous workflow published an article about\n// the wrong subject.\nconst j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst coverUrl = pick('coverUrl', 1);\nconst caption  = pick('caption', 2);\nconst duration = Number(pick('durationSeconds', 3) || '0');\n\nfor (const [name, value] of [['videoUrl', videoUrl], ['coverUrl', coverUrl]]) {\n  if (!/^https:\\/\\//.test(value)) {\n    throw new Error(`${name} must be a public https URL, got: ${value || '(empty)'}`);\n  }\n}\nif (!caption) throw new Error('caption is empty. A Reel published with no caption cannot be edited into one later.');\n\n// Facebook Reels are 3 to 90 seconds. Instagram allows far longer, but this\n// workflow posts the same file to both, so the tighter limit is the real one.\n// Checked here rather than discovered after the bytes have been uploaded.\nif (!Number.isFinite(duration) || duration <= 0) {\n  throw new Error('durationSeconds is required so the 90 second Facebook Reels limit can be checked before uploading.');\n}\nif (duration < 3 || duration > 90) {\n  throw new Error(`This video is ${duration}s. Facebook Reels accepts 3 to 90 seconds, so it cannot be published as a Reel.`);\n}\n\nreturn [{ json: { videoUrl, coverUrl, caption, duration } }];"
+        },
+        "name": "Normalise Input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -240,
+          300
+        ],
+        "id": "8a2c338e-ee24-449d-afa5-06866bd658c1"
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "17841477062009382",
+          "edge": "media",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "media_type",
+                  "value": "REELS"
+                },
+                {
+                  "name": "video_url",
+                  "value": "={{ $json.videoUrl }}"
+                },
+                {
+                  "name": "cover_url",
+                  "value": "={{ $json.coverUrl }}"
+                },
+                {
+                  "name": "caption",
+                  "value": "={{ $json.caption }}"
+                },
+                {
+                  "name": "share_to_feed",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        "name": "IG Create Container",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          -20,
+          300
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        },
+        "id": "39fc2fbb-c90a-4229-a678-63bb68a50864"
+      },
+      {
+        "parameters": {
+          "amount": 15
+        },
+        "name": "Wait for Encoding",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          200,
+          300
+        ],
+        "webhookId": "3e0824f7-f85f-465e-b7a3-a9324fbd96f4",
+        "id": "70ec3029-e059-4053-8a24-4129d6440104"
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "GET",
+          "graphApiVersion": "v23.0",
+          "node": "={{ $('IG Create Container').item.json.id }}",
+          "edge": "",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "fields",
+                  "value": "status_code,status"
+                }
+              ]
+            }
+          }
+        },
+        "name": "IG Container Status",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          420,
+          300
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        },
+        "id": "8daa0edd-3d05-4e07-bdc7-6947d319e12f"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "finished",
+                "leftValue": "={{ $json.status_code }}",
+                "rightValue": "FINISHED",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "name": "Encoded?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          640,
+          300
+        ],
+        "id": "8f812643-ab19-4817-9388-30dd841e051c"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Instagram encodes the video before the container can be published. Polling\n// forever would hang the run, so cap it: 20 attempts at 15s is five minutes,\n// well past the normal encode time for a short.\nconst attempt = ($runIndex ?? 0) + 1;\nif (attempt >= 20) {\n  const status = $('IG Container Status').item.json.status_code;\n  throw new Error(`Instagram container still ${status} after ${attempt} checks. Nothing was published; check the Meta status page and retry.`);\n}\nreturn $input.all();"
+        },
+        "name": "Retry Guard",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          640,
+          500
+        ],
+        "id": "7d1cc8d9-e7a0-4ec7-9fe3-dee2d6fc89e5"
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "17841477062009382",
+          "edge": "media_publish",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "creation_id",
+                  "value": "={{ $('IG Create Container').item.json.id }}"
+                }
+              ]
+            }
+          }
+        },
+        "name": "IG Publish",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          880,
+          200
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        },
+        "id": "ddbb706d-67e6-40f4-a502-0815be1ca91c"
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "me",
+          "edge": "video_reels",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "upload_phase",
+                  "value": "start"
+                }
+              ]
+            }
+          }
+        },
+        "name": "FB Reel Start",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          1100,
+          200
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        },
+        "id": "2ec6b83e-05cb-4e4b-92da-78726db3152a"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://rupload.facebook.com/video-upload/v23.0/{{ $json.video_id }}",
+          "authentication": "predefinedCredentialType",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "file_url",
+                "value": "={{ $('Normalise Input').item.json.videoUrl }}"
+              }
+            ]
+          },
+          "options": {},
+          "nodeCredentialType": "facebookGraphApi"
+        },
+        "name": "FB Reel Upload",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1320,
+          200
+        ],
+        "id": "14d03941-ea8b-4ab6-be76-db4da80f37b7",
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "me",
+          "edge": "video_reels",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "video_id",
+                  "value": "={{ $('FB Reel Start').item.json.video_id }}"
+                },
+                {
+                  "name": "upload_phase",
+                  "value": "finish"
+                },
+                {
+                  "name": "video_state",
+                  "value": "PUBLISHED"
+                },
+                {
+                  "name": "description",
+                  "value": "={{ $('Normalise Input').item.json.caption }}"
+                }
+              ]
+            }
+          }
+        },
+        "name": "FB Reel Finish",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          1540,
+          200
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        },
+        "id": "85bb70d3-d4b2-4dd6-b8b5-37d6f21e79ec"
+      },
+      {
+        "parameters": {
+          "jsCode": "// One place to read what actually happened. Both platforms report success\n// differently \u2014 Instagram returns the published media id, Facebook Reels\n// returns {success:true} and the id came back in the start phase.\nconst v = $('Normalise Input').item.json;\nreturn [{ json: {\n  instagramMediaId: $('IG Publish').item.json.id ?? null,\n  facebookVideoId: $('FB Reel Start').item.json.video_id ?? null,\n  facebookFinished: $('FB Reel Finish').item.json.success === true,\n  caption: v.caption,\n  durationSeconds: v.duration,\n  // Cosmetic and deliberately non-fatal: both cover nodes are\n  // continueRegularOutput, because they run *after* the Reel is\n  // already live on both platforms and must never fail a published run.\n  facebookCoverSet: $('FB Set Reel Cover').item.json?.id != null\n                 || $('FB Set Reel Cover').item.json?.success === true,\n} }];"
+        },
+        "name": "Summary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1760,
+          200
+        ],
+        "id": "88c7e3dd-9c15-48da-97f7-17db0d675cc4"
+      },
+      {
+        "parameters": {
+          "url": "={{ $('Normalise Input').item.json.coverUrl }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file",
+                "outputPropertyName": "cover"
+              }
+            }
+          }
+        },
+        "id": "fb-fetch-cover-node-0001",
+        "name": "FB Fetch Cover",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1740,
+          200
+        ],
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://graph.facebook.com/v23.0/{{ $('FB Reel Start').item.json.video_id }}/thumbnails",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "facebookGraphApi",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "is_preferred",
+                "value": "true"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "source",
+                "inputDataFieldName": "cover"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "fb-set-reel-cover-node-01",
+        "name": "FB Set Reel Cover",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1940,
+          200
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Form Trigger": {
+        "main": [
+          [
+            {
+              "node": "Normalise Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalise Input": {
+        "main": [
+          [
+            {
+              "node": "IG Create Container",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IG Create Container": {
+        "main": [
+          [
+            {
+              "node": "Wait for Encoding",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait for Encoding": {
+        "main": [
+          [
+            {
+              "node": "IG Container Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IG Container Status": {
+        "main": [
+          [
+            {
+              "node": "Encoded?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Encoded?": {
+        "main": [
+          [
+            {
+              "node": "IG Publish",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Retry Guard",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retry Guard": {
+        "main": [
+          [
+            {
+              "node": "Wait for Encoding",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IG Publish": {
+        "main": [
+          [
+            {
+              "node": "FB Reel Start",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Reel Start": {
+        "main": [
+          [
+            {
+              "node": "FB Reel Upload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Reel Upload": {
+        "main": [
+          [
+            {
+              "node": "FB Reel Finish",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Reel Finish": {
+        "main": [
+          [
+            {
+              "node": "FB Fetch Cover",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Fetch Cover": {
+        "main": [
+          [
+            {
+              "node": "FB Set Reel Cover",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Set Reel Cover": {
+        "main": [
+          [
+            {
+              "node": "Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Oktay Shakirov",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-08-23T14:53:08.978Z",
+        "id": 195,
+        "workflowId": "1GTSF6izfwA1gpig",
+        "versionId": "a2589751-1918-464a-8511-7b7f40aab041",
+        "event": "activated",
+        "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      },
+      {
+        "createdAt": "2026-08-23T14:53:08.971Z",
+        "id": 194,
+        "workflowId": "1GTSF6izfwA1gpig",
+        "versionId": "a2589751-1918-464a-8511-7b7f40aab041",
+        "event": "deactivated",
+        "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      }
+    ]
+  }
+}

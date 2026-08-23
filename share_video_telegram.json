@@ -1,0 +1,295 @@
+{
+  "id": "2WlbdJ1qQ7HKU9m6",
+  "name": "Tinnitus Help: Share Video To Telegram",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Tinnitus Help: Share Video To Telegram",
+        "formDescription": "Post a finished video to the Telegram channel. Telegram unfurls the YouTube URL into its own play card, so no file is uploaded here.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "hook",
+              "fieldType": "textarea",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "youtubeUrl",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {},
+        "path": "share-video-telegram-tinnitus"
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -300,
+        300
+      ],
+      "id": "5e274f39-cdf8-4420-99d2-9b4228a253b4",
+      "name": "Form Trigger",
+      "webhookId": "share-video-telegram-tinnitus"
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst title = pick('title', 0);\nconst hook = pick('hook', 1);\nconst youtubeUrl = pick('youtubeUrl', 2);\n\nif (!title) throw new Error('title is empty.');\nif (!/^https:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\//.test(youtubeUrl)) {\n  throw new Error(`youtubeUrl must be a YouTube URL, got: ${youtubeUrl || '(empty)'}`);\n}\n\n\n// **The poster is YouTube's own, by video id.** `i.ytimg.com/vi/<id>/\n// maxresdefault.jpg` is the thumbnail we uploaded with the video, it is\n// public and permanent, and it needs no tunnel and no file handling here.\n// The site's own /images/videos/<slug>.webp would work too but Telegram is\n// happier with jpeg.\nconst ytId = (youtubeUrl.match(/(?:v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})/) || [])[1] || '';\nconst posterUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : '';\n\nreturn [{ json: { title, hook, youtubeUrl, ytId, posterUrl } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        300
+      ],
+      "id": "d2838dac-5698-485f-9963-ce9a063aa589",
+      "name": "Normalise Input"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendPhoto",
+        "chatId": "@tinnitushelpme",
+        "binaryData": false,
+        "additionalFields": {
+          "caption": "=\ud83c\udfac {{ $json.title }}\n\n{{ $json.hook }}\n\n\u25b6\ufe0f Watch the full video: {{ $json.youtubeUrl }}",
+          "appendAttribution": false
+        },
+        "file": "={{ $json.posterUrl }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        140,
+        300
+      ],
+      "id": "d8f29ae4-452c-4ec3-bfee-3ff2f80e4fef",
+      "name": "Telegram Post",
+      "webhookId": "56573c66-0615-42c8-95ce-29603609b89b",
+      "credentials": {
+        "telegramApi": {
+          "id": "4rLRmLOvcIlidonP",
+          "name": "Telegram (TinniusHelp)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {\n  telegramMessageId: $json?.result?.message_id ?? $json?.message_id ?? null,\n  youtubeUrl: $('Normalise Input').item.json.youtubeUrl,\n  title: $('Normalise Input').item.json.title,\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        300
+      ],
+      "id": "3601039d-ff6a-4278-8505-9e3e8f6a1276",
+      "name": "Summary"
+    }
+  ],
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalise Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Input": {
+      "main": [
+        [
+          {
+            "node": "Telegram Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Post": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "activeVersionId": "c3f81f58-4173-4311-81cc-803655c693fd",
+  "versionCounter": 5,
+  "sourceWorkflowId": null,
+  "activeVersion": {
+    "updatedAt": "2026-08-23T22:04:21.165Z",
+    "createdAt": "2026-08-23T22:04:21.165Z",
+    "versionId": "c3f81f58-4173-4311-81cc-803655c693fd",
+    "workflowId": "2WlbdJ1qQ7HKU9m6",
+    "nodes": [
+      {
+        "parameters": {
+          "formTitle": "Tinnitus Help: Share Video To Telegram",
+          "formDescription": "Post a finished video to the Telegram channel. Telegram unfurls the YouTube URL into its own play card, so no file is uploaded here.",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "title",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "hook",
+                "fieldType": "textarea",
+                "requiredField": false
+              },
+              {
+                "fieldLabel": "youtubeUrl",
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {},
+          "path": "share-video-telegram-tinnitus"
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.2,
+        "position": [
+          -300,
+          300
+        ],
+        "id": "5e274f39-cdf8-4420-99d2-9b4228a253b4",
+        "name": "Form Trigger",
+        "webhookId": "share-video-telegram-tinnitus"
+      },
+      {
+        "parameters": {
+          "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst title = pick('title', 0);\nconst hook = pick('hook', 1);\nconst youtubeUrl = pick('youtubeUrl', 2);\n\nif (!title) throw new Error('title is empty.');\nif (!/^https:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\//.test(youtubeUrl)) {\n  throw new Error(`youtubeUrl must be a YouTube URL, got: ${youtubeUrl || '(empty)'}`);\n}\n\n\n// **The poster is YouTube's own, by video id.** `i.ytimg.com/vi/<id>/\n// maxresdefault.jpg` is the thumbnail we uploaded with the video, it is\n// public and permanent, and it needs no tunnel and no file handling here.\n// The site's own /images/videos/<slug>.webp would work too but Telegram is\n// happier with jpeg.\nconst ytId = (youtubeUrl.match(/(?:v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})/) || [])[1] || '';\nconst posterUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : '';\n\nreturn [{ json: { title, hook, youtubeUrl, ytId, posterUrl } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -80,
+          300
+        ],
+        "id": "d2838dac-5698-485f-9963-ce9a063aa589",
+        "name": "Normalise Input"
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "sendPhoto",
+          "chatId": "@tinnitushelpme",
+          "binaryData": false,
+          "additionalFields": {
+            "caption": "=\ud83c\udfac {{ $json.title }}\n\n{{ $json.hook }}\n\n\u25b6\ufe0f Watch the full video: {{ $json.youtubeUrl }}",
+            "appendAttribution": false
+          },
+          "file": "={{ $json.posterUrl }}"
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          140,
+          300
+        ],
+        "id": "d8f29ae4-452c-4ec3-bfee-3ff2f80e4fef",
+        "name": "Telegram Post",
+        "webhookId": "56573c66-0615-42c8-95ce-29603609b89b",
+        "credentials": {
+          "telegramApi": {
+            "id": "4rLRmLOvcIlidonP",
+            "name": "Telegram (TinniusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "return [{ json: {\n  telegramMessageId: $json?.result?.message_id ?? $json?.message_id ?? null,\n  youtubeUrl: $('Normalise Input').item.json.youtubeUrl,\n  title: $('Normalise Input').item.json.title,\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          360,
+          300
+        ],
+        "id": "3601039d-ff6a-4278-8505-9e3e8f6a1276",
+        "name": "Summary"
+      }
+    ],
+    "connections": {
+      "Form Trigger": {
+        "main": [
+          [
+            {
+              "node": "Normalise Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalise Input": {
+        "main": [
+          [
+            {
+              "node": "Telegram Post",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram Post": {
+        "main": [
+          [
+            {
+              "node": "Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Oktay Shakirov",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-08-23T22:04:21.184Z",
+        "id": 241,
+        "workflowId": "2WlbdJ1qQ7HKU9m6",
+        "versionId": "c3f81f58-4173-4311-81cc-803655c693fd",
+        "event": "activated",
+        "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      },
+      {
+        "createdAt": "2026-08-23T22:04:21.178Z",
+        "id": 240,
+        "workflowId": "2WlbdJ1qQ7HKU9m6",
+        "versionId": "c3f81f58-4173-4311-81cc-803655c693fd",
+        "event": "deactivated",
+        "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      }
+    ]
+  }
+}

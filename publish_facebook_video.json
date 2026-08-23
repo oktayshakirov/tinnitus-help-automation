@@ -1,0 +1,527 @@
+{
+  "id": "Lyhn5U7pYhrAs9x7",
+  "name": "Tinnitus Help: Publish Facebook Video",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Tinnitus Help: Publish Facebook Video",
+        "formDescription": "Native long-form video upload to the Page feed (not a Reel \u2014 no duration limit). videoUrl and thumbUrl must be publicly reachable for the length of the run.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "videoUrl",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "description",
+              "fieldType": "textarea",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "thumbUrl",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "youtubeUrl",
+              "requiredField": false
+            }
+          ]
+        },
+        "options": {},
+        "path": "c4a3b1d8-2b0b-4d2b-8b1c-fb-video-tinnitus"
+      },
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -460,
+        300
+      ],
+      "webhookId": "c4a3b1d8-2b0b-4d2b-8b1c-fb-video-tinnitus",
+      "id": "2db025a1-c54d-4a4b-a5cf-0d070127dfb3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst title = pick('title', 1);\nconst rawDescription = pick('description', 2);\nconst thumbUrl = pick('thumbUrl', 3);\n\nif (!/^https:\\/\\//.test(videoUrl)) {\n  throw new Error(`videoUrl must be a public https URL, got: ${videoUrl || '(empty)'}`);\n}\nif (!title) throw new Error('title is empty.');\nif (thumbUrl && !/^https:\\/\\//.test(thumbUrl)) {\n  throw new Error(`thumbUrl must be a public https URL if given, got: ${thumbUrl}`);\n}\n\n// A YouTube description is written for YouTube: hook, then the article link,\n// then a second summary, chapters, and a repeat of the link. Pasting all of it\n// under a Facebook video buries the one line a reader acts on and prints the\n// same URL twice. Facebook gets the first paragraph and the link, nothing else.\n//\n// The trim happens here rather than at the caller so it cannot be forgotten:\n// the workflow is handed the full YouTube description and decides what to post.\nfunction trimForFacebook(text) {\n  if (!text) return '';\n  const paragraphs = text.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean);\n  const first = paragraphs[0] ?? '';\n\n  // Carry the link's own line verbatim rather than relabelling it. An article\n  // video says \"Full article: <url>\"; a sound session says \"More at <url>\" and\n  // has no article behind it, so printing \"Full article\" there would be a lie.\n  // Prefer the labelled form because these descriptions repeat the same URL at\n  // the bottom under different wording, and the first one is canonical.\n  const lines = text.split('\\n').map((l) => l.trim());\n  const linkLine =\n    lines.find((l) => /^Full article:\\s*https?:\\/\\/\\S+/.test(l)) ??\n    lines.find((l) => /https?:\\/\\/\\S+/.test(l));\n\n  if (!linkLine || first.includes(linkLine)) return first;\n  return `${first}\\n\\n${linkLine}`;\n}\n\n// **The Telegram share takes the YouTube URL, not the tunnel URL.** `videoUrl`\n// above is an ephemeral trycloudflare address that Facebook reads once and\n// that is dead minutes later - posting it to a channel would be a broken link\n// by the time anybody tapped it. `youtubeUrl` is where the video actually\n// lives, and it is what Telegram unfurls into a play card.\n//\n// It is optional: a run that omits it publishes to Facebook and skips the\n// Telegram branch, so every existing caller keeps working unchanged.\nconst youtubeUrl = pick('youtubeUrl', 4);\nif (youtubeUrl && !/^https:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\//.test(youtubeUrl)) {\n  throw new Error(`youtubeUrl must be a YouTube URL if given, got: ${youtubeUrl}`);\n}\n\n// The channel post wants the hook on its own - the first paragraph, without\n// the article link that `description` carries for Facebook. Telegram renders\n// the YouTube URL as its own card, so a second link above it is noise.\nconst hook = (rawDescription.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean)[0]) ?? '';\n\nconst description = trimForFacebook(rawDescription);\n\n\n// **The poster is YouTube's own, by video id.** `i.ytimg.com/vi/<id>/\n// maxresdefault.jpg` is the thumbnail we uploaded with the video, it is\n// public and permanent, and it needs no tunnel and no file handling here.\n// The site's own /images/videos/<slug>.webp would work too but Telegram is\n// happier with jpeg.\nconst ytId = (youtubeUrl.match(/(?:v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})/) || [])[1] || '';\nconst posterUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : '';\n\nreturn [{ json: { videoUrl, title, description, thumbUrl, youtubeUrl, hook, ytId, posterUrl } }];"
+      },
+      "name": "Normalise Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        300
+      ],
+      "id": "ccba346d-bd27-4214-a4b7-2b6a14f56fe6"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "videos",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "file_url",
+                "value": "={{ $json.videoUrl }}"
+              },
+              {
+                "name": "title",
+                "value": "={{ $json.title }}"
+              },
+              {
+                "name": "description",
+                "value": "={{ $json.description }}"
+              },
+              {
+                "name": "thumb_url",
+                "value": "={{ $json.thumbUrl || undefined }}"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Publish Video",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        300
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "67c7d374-e091-4de5-b88b-6866a1025547"
+    },
+    {
+      "parameters": {
+        "jsCode": "// `$('Publish Video')` rather than `$json`: the Telegram branch now sits\n// between Publish Video and here, so `$json` is whichever node last ran.\nlet telegramMessageId = null;\ntry {\n  telegramMessageId = $('Telegram Post').item.json?.result?.message_id\n    ?? $('Telegram Post').item.json?.message_id ?? null;\n} catch (e) {\n  // The Telegram branch did not run - no youtubeUrl was passed. Not an error.\n}\n\nreturn [{ json: {\n  facebookVideoId: $('Publish Video').item.json.id,\n  title: $('Normalise Input').item.json.title,\n  youtubeUrl: $('Normalise Input').item.json.youtubeUrl || null,\n  telegramSent: telegramMessageId !== null,\n  telegramMessageId,\n} }];"
+      },
+      "name": "Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        300
+      ],
+      "id": "4e3033c5-0e64-45db-b448-f16d643fe937"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a368f5d1-4f96-4505-a675-bd5560825580",
+              "leftValue": "={{ $('Normalise Input').item.json.youtubeUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        200,
+        300
+      ],
+      "id": "1cccd30b-bb30-41f0-bd10-9dcedca47dd9",
+      "name": "Share To Telegram?"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendPhoto",
+        "chatId": "@tinnitushelpme",
+        "binaryData": false,
+        "additionalFields": {
+          "caption": "=\ud83c\udfac {{ $json.title }}\n\n{{ $json.hook }}\n\n\u25b6\ufe0f Watch the full video: {{ $json.youtubeUrl }}",
+          "appendAttribution": false
+        },
+        "file": "={{ $json.posterUrl }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        420,
+        200
+      ],
+      "id": "5aef6e3e-2650-40c7-b0fd-cba70c382a5f",
+      "name": "Telegram Post",
+      "webhookId": "e6951813-7eb0-4d10-9031-103d73c96cd4",
+      "credentials": {
+        "telegramApi": {
+          "id": "4rLRmLOvcIlidonP",
+          "name": "Telegram (TinniusHelp)"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalise Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Input": {
+      "main": [
+        [
+          {
+            "node": "Publish Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Video": {
+      "main": [
+        [
+          {
+            "node": "Share To Telegram?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share To Telegram?": {
+      "main": [
+        [
+          {
+            "node": "Telegram Post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Post": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "activeVersionId": "dda2433c-8c49-49b5-9a5a-6de381296178",
+  "versionCounter": 8,
+  "sourceWorkflowId": null,
+  "activeVersion": {
+    "updatedAt": "2026-08-23T22:04:21.288Z",
+    "createdAt": "2026-08-23T22:04:21.288Z",
+    "versionId": "dda2433c-8c49-49b5-9a5a-6de381296178",
+    "workflowId": "Lyhn5U7pYhrAs9x7",
+    "nodes": [
+      {
+        "parameters": {
+          "formTitle": "Tinnitus Help: Publish Facebook Video",
+          "formDescription": "Native long-form video upload to the Page feed (not a Reel \u2014 no duration limit). videoUrl and thumbUrl must be publicly reachable for the length of the run.",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "videoUrl",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "title",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "description",
+                "fieldType": "textarea",
+                "requiredField": false
+              },
+              {
+                "fieldLabel": "thumbUrl",
+                "requiredField": false
+              },
+              {
+                "fieldLabel": "youtubeUrl",
+                "requiredField": false
+              }
+            ]
+          },
+          "options": {},
+          "path": "c4a3b1d8-2b0b-4d2b-8b1c-fb-video-tinnitus"
+        },
+        "name": "Form Trigger",
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.2,
+        "position": [
+          -460,
+          300
+        ],
+        "webhookId": "c4a3b1d8-2b0b-4d2b-8b1c-fb-video-tinnitus",
+        "id": "2db025a1-c54d-4a4b-a5cf-0d070127dfb3"
+      },
+      {
+        "parameters": {
+          "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst title = pick('title', 1);\nconst rawDescription = pick('description', 2);\nconst thumbUrl = pick('thumbUrl', 3);\n\nif (!/^https:\\/\\//.test(videoUrl)) {\n  throw new Error(`videoUrl must be a public https URL, got: ${videoUrl || '(empty)'}`);\n}\nif (!title) throw new Error('title is empty.');\nif (thumbUrl && !/^https:\\/\\//.test(thumbUrl)) {\n  throw new Error(`thumbUrl must be a public https URL if given, got: ${thumbUrl}`);\n}\n\n// A YouTube description is written for YouTube: hook, then the article link,\n// then a second summary, chapters, and a repeat of the link. Pasting all of it\n// under a Facebook video buries the one line a reader acts on and prints the\n// same URL twice. Facebook gets the first paragraph and the link, nothing else.\n//\n// The trim happens here rather than at the caller so it cannot be forgotten:\n// the workflow is handed the full YouTube description and decides what to post.\nfunction trimForFacebook(text) {\n  if (!text) return '';\n  const paragraphs = text.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean);\n  const first = paragraphs[0] ?? '';\n\n  // Carry the link's own line verbatim rather than relabelling it. An article\n  // video says \"Full article: <url>\"; a sound session says \"More at <url>\" and\n  // has no article behind it, so printing \"Full article\" there would be a lie.\n  // Prefer the labelled form because these descriptions repeat the same URL at\n  // the bottom under different wording, and the first one is canonical.\n  const lines = text.split('\\n').map((l) => l.trim());\n  const linkLine =\n    lines.find((l) => /^Full article:\\s*https?:\\/\\/\\S+/.test(l)) ??\n    lines.find((l) => /https?:\\/\\/\\S+/.test(l));\n\n  if (!linkLine || first.includes(linkLine)) return first;\n  return `${first}\\n\\n${linkLine}`;\n}\n\n// **The Telegram share takes the YouTube URL, not the tunnel URL.** `videoUrl`\n// above is an ephemeral trycloudflare address that Facebook reads once and\n// that is dead minutes later - posting it to a channel would be a broken link\n// by the time anybody tapped it. `youtubeUrl` is where the video actually\n// lives, and it is what Telegram unfurls into a play card.\n//\n// It is optional: a run that omits it publishes to Facebook and skips the\n// Telegram branch, so every existing caller keeps working unchanged.\nconst youtubeUrl = pick('youtubeUrl', 4);\nif (youtubeUrl && !/^https:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\//.test(youtubeUrl)) {\n  throw new Error(`youtubeUrl must be a YouTube URL if given, got: ${youtubeUrl}`);\n}\n\n// The channel post wants the hook on its own - the first paragraph, without\n// the article link that `description` carries for Facebook. Telegram renders\n// the YouTube URL as its own card, so a second link above it is noise.\nconst hook = (rawDescription.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean)[0]) ?? '';\n\nconst description = trimForFacebook(rawDescription);\n\n\n// **The poster is YouTube's own, by video id.** `i.ytimg.com/vi/<id>/\n// maxresdefault.jpg` is the thumbnail we uploaded with the video, it is\n// public and permanent, and it needs no tunnel and no file handling here.\n// The site's own /images/videos/<slug>.webp would work too but Telegram is\n// happier with jpeg.\nconst ytId = (youtubeUrl.match(/(?:v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})/) || [])[1] || '';\nconst posterUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : '';\n\nreturn [{ json: { videoUrl, title, description, thumbUrl, youtubeUrl, hook, ytId, posterUrl } }];"
+        },
+        "name": "Normalise Input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -240,
+          300
+        ],
+        "id": "ccba346d-bd27-4214-a4b7-2b6a14f56fe6"
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "me",
+          "edge": "videos",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "file_url",
+                  "value": "={{ $json.videoUrl }}"
+                },
+                {
+                  "name": "title",
+                  "value": "={{ $json.title }}"
+                },
+                {
+                  "name": "description",
+                  "value": "={{ $json.description }}"
+                },
+                {
+                  "name": "thumb_url",
+                  "value": "={{ $json.thumbUrl || undefined }}"
+                }
+              ]
+            }
+          }
+        },
+        "name": "Publish Video",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          -20,
+          300
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        },
+        "id": "67c7d374-e091-4de5-b88b-6866a1025547"
+      },
+      {
+        "parameters": {
+          "jsCode": "// `$('Publish Video')` rather than `$json`: the Telegram branch now sits\n// between Publish Video and here, so `$json` is whichever node last ran.\nlet telegramMessageId = null;\ntry {\n  telegramMessageId = $('Telegram Post').item.json?.result?.message_id\n    ?? $('Telegram Post').item.json?.message_id ?? null;\n} catch (e) {\n  // The Telegram branch did not run - no youtubeUrl was passed. Not an error.\n}\n\nreturn [{ json: {\n  facebookVideoId: $('Publish Video').item.json.id,\n  title: $('Normalise Input').item.json.title,\n  youtubeUrl: $('Normalise Input').item.json.youtubeUrl || null,\n  telegramSent: telegramMessageId !== null,\n  telegramMessageId,\n} }];"
+        },
+        "name": "Summary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          640,
+          300
+        ],
+        "id": "4e3033c5-0e64-45db-b448-f16d643fe937"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "a368f5d1-4f96-4505-a675-bd5560825580",
+                "leftValue": "={{ $('Normalise Input').item.json.youtubeUrl }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          200,
+          300
+        ],
+        "id": "1cccd30b-bb30-41f0-bd10-9dcedca47dd9",
+        "name": "Share To Telegram?"
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "sendPhoto",
+          "chatId": "@tinnitushelpme",
+          "binaryData": false,
+          "additionalFields": {
+            "caption": "=\ud83c\udfac {{ $json.title }}\n\n{{ $json.hook }}\n\n\u25b6\ufe0f Watch the full video: {{ $json.youtubeUrl }}",
+            "appendAttribution": false
+          },
+          "file": "={{ $json.posterUrl }}"
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          420,
+          200
+        ],
+        "id": "5aef6e3e-2650-40c7-b0fd-cba70c382a5f",
+        "name": "Telegram Post",
+        "webhookId": "e6951813-7eb0-4d10-9031-103d73c96cd4",
+        "credentials": {
+          "telegramApi": {
+            "id": "4rLRmLOvcIlidonP",
+            "name": "Telegram (TinniusHelp)"
+          }
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Form Trigger": {
+        "main": [
+          [
+            {
+              "node": "Normalise Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalise Input": {
+        "main": [
+          [
+            {
+              "node": "Publish Video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Publish Video": {
+        "main": [
+          [
+            {
+              "node": "Share To Telegram?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Share To Telegram?": {
+        "main": [
+          [
+            {
+              "node": "Telegram Post",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram Post": {
+        "main": [
+          [
+            {
+              "node": "Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Oktay Shakirov",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-08-23T22:04:21.306Z",
+        "id": 245,
+        "workflowId": "Lyhn5U7pYhrAs9x7",
+        "versionId": "dda2433c-8c49-49b5-9a5a-6de381296178",
+        "event": "activated",
+        "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      },
+      {
+        "createdAt": "2026-08-23T22:04:21.303Z",
+        "id": 244,
+        "workflowId": "Lyhn5U7pYhrAs9x7",
+        "versionId": "dda2433c-8c49-49b5-9a5a-6de381296178",
+        "event": "deactivated",
+        "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      }
+    ]
+  }
+}

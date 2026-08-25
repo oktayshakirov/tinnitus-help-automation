@@ -99,12 +99,94 @@ It resolves the DB + image archive itself. Override with `--db` / `--archive`.
 
 Known non-issues it deliberately tolerates: markdown table separator rows (`| --- |`) are stripped before the dash check, `#anchor`/`?query` links validate against the base page, and link targets are checked against the DB **union the MDX actually on disk** (the DB has drifted and is missing at least two live posts).
 
-Checks: 1,200-2,500 words; 8-15 internal links, **bold** `**[Text](/path)**`, each page linked at most once, all slugs valid vs DB; exactly 2 `<Image />` and the **first one is the main image**; body images **not repeated in posts published close together** - reusing an archive image across the site is fine and expected; what matters is that someone reading a few recent posts back to back never sees the same picture twice. The gate warns when a body image also appears in any of the 5 most recent other posts by frontmatter date (`--recent-window`); the Build node keeps reaching for the same few files, and `audiologist.jpg` ended up as the body image on three consecutive posts. On a warning, swap in a different archive file, or fetch a new one with `pick_main_image.py` and add it under a generic reusable name (e.g. `sound-therapy-headphones.jpg`, `patient-consultation.jpg`) rather than a slug-specific one - old images are free to come back around later; exactly 2-3 lowercase tags from the fixed vocab; description 120-135 chars (hard max 140, the site truncates); no em/en dashes or `--` (plain `-` only); **no curly quotes** (`'`/`'`/`"`/`"` -> straight; applies to body AND the frontmatter description); no trailing metadata JSON (fenced or bare); ads never adjacent to images; no References section.
+Checks: 1,200-2,500 words; 8-15 internal links, **bold** `**[Text](/path)**`, each page linked at most once, all slugs valid vs DB; exactly 2 `<Image />` and the **first one is the main image**; body images **not repeated in posts published close together** - reusing an archive image across the site is fine and expected; what matters is that someone reading a few recent posts back to back never sees the same picture twice. The gate warns when a body image also appears in any of the 5 most recent other posts by frontmatter date (`--recent-window`); the Build node keeps reaching for the same few files, and `audiologist.jpg` ended up as the body image on three consecutive posts. On a warning, swap in a different archive file, or fetch a new one with `pick_main_image.py` and add it under a generic reusable name (e.g. `sound-therapy-headphones.jpg`, `patient-consultation.jpg`) rather than a slug-specific one - old images are free to come back around later; exactly 2-3 lowercase tags from the fixed vocab; description 120-135 chars (hard max 140, the site truncates); **`sources:` (3-5, authoritative) and `faq:` (4-5) present** - see Step 3b, this is the part that most affects post quality; no em/en dashes or `--` (plain `-` only); **no curly quotes** (`'`/`'`/`"`/`"` -> straight; applies to body AND the frontmatter description); no trailing metadata JSON (fenced or bare); ads never adjacent to images; no `## References` heading in the body (the `sources:` block replaces it).
 
 Most violations are auto-fixed by the Build node now - if one slips through, fix the article AND add a deterministic fix to the workflow node + `post_guidelines.md` (backup to the crypto repo's `.n8n-backups/` first; mutate the workflow dict in place; PUT only `name,nodes,connections,settings`).
 **Persisting workflow fixes:** live n8n edits only survive in the gitignored `.n8n-backups/`. When a fix is **important/major** (fixes a broken workflow, changes a contract, or prevents a defect on every future run), also sync the live workflow into this repo's committed JSON snapshot (`new_post.json`, `share_post.json`, `share_sound.json`, ...) and commit, so it survives an n8n reset - minor tweaks can stay live-only. Known deterministic fixes already committed: `slugToTitle` Title-Cases spaced-lowercase topics and splits on spaces-or-hyphens (was returning lowercase titles verbatim); the Build node moves a headless intro (prose between the main `<Image>` and the first `## <Highlighter>`) down under that heading, so every post opens with a headline.
 
 Post conventions: opens `<Blockquote>` → main `<Image>` → **first `## <Highlighter>` heading** (the intro/hook paragraphs go *under* that heading - a post that opens with a bare paragraph before any heading is a FAIL; the Build node now moves such prose under the first heading automatically); `## <Highlighter>Heading</Highlighter>`; `<AdComponent />`; first body image = main image (`/images/{slug}.jpg` flat); standalone sub-group labels that head a bullet list use `##### ` (h5); posts carry no `author` field. Title is auto-derived from the slug (Title Cased, small words lowercased, acronyms preserved via a map in the Build node) - the AI does not write it; spot-check any new acronym (add it to the `acronyms` map in the Build node if it comes out wrong, e.g. `cbt`/`tmj`/`airpods`).
+
+## Step 3b - The three frontmatter blocks that carry E-E-A-T
+
+**This is the highest-value part of a tinnitus post and the part the workflow
+does not write on its own.** Tinnitus is YMYL (Your Money Your Life) health
+content: Google holds it to a higher quality bar than an ordinary blog, and the
+site was built with the machinery to meet that bar. An audit on 2026-08-25 found
+the pipeline had stopped feeding it - every post generated in 2026 carried none
+of the three, while the older hand-written posts (`what-is-tinnitus`,
+`tinnitus-and-sleep`, `pulsatile-tinnitus`, `ototoxic-medications`) carried all
+of them. The worst case was `serotonin-and-tinnitus`, which discussed SSRI
+start-up spikes, tapering and dose titration, said "some studies suggest" four
+times, and cited nothing.
+
+### `sources:` - REQUIRED on any post making a health claim
+
+Renders as a real `References` list at the foot of the post
+(`src/components/References/`). Its own docstring is the reason: outbound links
+to primary sources are an E-E-A-T signal on YMYL topics, so they are rendered as
+normal followed links.
+
+```yaml
+sources:
+  - title: 'Tinnitus - treatment and coping'
+    url: 'https://www.nidcd.nih.gov/health/tinnitus'
+    publisher: 'NIDCD, National Institutes of Health'
+```
+
+- **3-5 sources.** `title`, `url`, and `publisher` on every entry.
+- **Primary and authoritative only.** The domains already established across the
+  archive, in rough order of use: `nidcd.nih.gov`, `entnet.org` (AAO-HNS
+  clinical practice guidelines), `ata.org` (American Tinnitus Association),
+  `nhs.uk`, `who.int`, `mayoclinic.org`, `cochrane.org`, `ncbi.nlm.nih.gov`.
+  Never another blog, never a supplement retailer, never a content farm. The
+  gate warns on any domain outside that set - widen it deliberately, not by
+  reflex.
+- **Verify every URL resolves before committing.**
+  `curl -sL -o /dev/null -w '%{http_code}'`. The AI invents plausible deep links
+  (a real case on the crypto side: two nonexistent app-store URLs). A 404 in a
+  reference list is worse than no reference list - it is a broken authority
+  signal on the exact page that needs one.
+- **The source must actually support the claim.** Do not staple a generic NIDCD
+  tinnitus overview onto a post about magnesium and call it cited. If the
+  specific claim has no authoritative source behind it, soften the claim
+  instead.
+- **This does NOT mean a `## References` heading in the body.** That is still a
+  hard FAIL - it is what the AI writes when left alone, and it duplicates the
+  component. The structured frontmatter block is the only correct form.
+
+### `faq:` - REQUIRED, 4-5 entries
+
+Renders a visible `FaqSection` and feeds `faqSchema()` (FAQPage JSON-LD) from
+`BlogPost.SEO.tsx`. Same shape as the crypto side's `faqs`, but the key here is
+singular `faq`.
+
+```yaml
+faq:
+  - question: 'Why is my tinnitus worse at night?'
+    answer: 'Your bedroom is the quietest environment you spend time in, so ...'
+```
+
+- Write the questions as **real search queries** - the phrasing someone types or
+  says, not a heading rewritten with a question mark. `tinnitus-and-sleep` is
+  the model to copy.
+- Answers 40-90 words, self-contained, plain text (the JSON-LD takes the plain
+  answer, so no markdown links inside).
+- **Be honest about the payoff.** Google restricted FAQ *rich results* in 2023 to
+  well-known authoritative government and health sites, so do not expect the
+  snippet. The value here is the on-page content: it targets long-tail question
+  queries and People Also Ask directly, which is where this site actually wins.
+
+### `medical:` - set `false` on culture and history posts
+
+Defaults to **true**, which types the page as `MedicalWebPage` and renders
+`<MedicalDisclaimer />`. Correct for health posts; wrong and slightly absurd on
+an art-history piece. The seven posts that set `medical: false` are
+`celebrities-with-tinnitus`, `did-van-gogh-have-tinnitus`, `tinnitus-in-art`,
+`tinnitus-in-history`, `tinnitus-in-digital-age`, `tinnitus-in-wildlife`,
+`what-tinnitus-teaches-us` - the tell is tags like `history`, `society`, or a
+topic about tinnitus in culture rather than tinnitus in a body. On those posts
+`sources:` is optional (cite where a historical claim needs it); on every
+medical post it is mandatory.
 
 ## Step 4 - Stage locally + pick the main image
 Copy the MDX to `tinnitus-blog/content/posts/` - do NOT commit.

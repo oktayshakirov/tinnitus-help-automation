@@ -35,9 +35,15 @@ SOURCE_DOMAINS = {
     "cochrane.org",
     "ncbi.nlm.nih.gov",
     "pubmed.ncbi.nlm.nih.gov",
+    "pmc.ncbi.nlm.nih.gov",
+    "ods.od.nih.gov",
     "nih.gov",
     "cdc.gov",
 }
+
+# curl notes for verifying these: pubmed returns 203, not 200 (bot mitigation
+# on a live page) and ods.od.nih.gov returns 403 to curl entirely. Treat any
+# 2xx as live, and check an ods link in a browser rather than assuming it 404s.
 
 # Tags that mark a culture/history post rather than a health one. Those set
 # medical: false, which drops the MedicalWebPage typing and the clinical

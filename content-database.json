@@ -279,6 +279,10 @@
     "how-artificial-sweeteners-may-affect-your-tinnitus": {
       "slug": "how-artificial-sweeteners-may-affect-your-tinnitus",
       "title": "How Artificial Sweeteners May Affect Your Tinnitus?"
+    },
+    "serotonin-and-tinnitus": {
+      "slug": "serotonin-and-tinnitus",
+      "title": "Serotonin and Tinnitus"
     }
   },
   "zen": {
@@ -321,7 +325,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 24,
+    "blog": 25,
     "zen": 1
   }
 }

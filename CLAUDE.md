@@ -8,24 +8,24 @@ Generator repo for Tinnitus Help content. Holds the n8n workflow JSON snapshots
 The site repo (`~/Coding/tinnitus-blog`) is the source of truth for anything
 shipped — generated MDX is copied there and edited there.
 
-## The publish-content skill is NOT in this repo
+## publish-content-tinnitus
 
-`publish-content` covers **both** Tinnitus Help and Crypto Wiki from a single
-copy, versioned in the other automation repo:
+The publishing skill lives here, at `.claude/skills/publish-content-tinnitus/`
+(`~/.claude/skills/publish-content-tinnitus` symlinks to it). It covers
+tinnitushelp.me only.
 
-    ~/Coding/crypto-wiki-automation/.claude/skills/publish-content/
+**As of 2026-08-25 this is a standalone copy, not shared with Crypto Wiki.**
+Originally one `publish-content` skill covered both sites (living in
+`crypto-wiki-automation`, branching per-site inside `quality_gate.py`), on the
+reasoning that the sequence was identical and two copies would drift. Split on
+request into `publish-content-tinnitus` here and `publish-content-crypto` in
+`crypto-wiki-automation`, to let the two diverge independently as the sites'
+needs change. **A fix made in one does not apply to the other — check both
+skills when changing a rule that might be shared** (e.g. the deploy-gate
+polling logic, the Pexels dup-check flow).
 
-`~/.claude/skills/publish-content` is a symlink into that path, which is how
-Claude Code discovers it — so it works from any directory, including this one.
-
-This is deliberate. The publish sequence is identical for both sites; only the
-n8n workflow IDs and the per-site formatting rules differ, and those are already
-data inside the skill (`scripts/quality_gate.py` has a `SITES` dict and infers
-the site from the MDX path). Two copies would drift.
-
-Edits to the skill, and the `.n8n-api-key` / `.pexels-api-key` secrets and
-`.n8n-backups/` it depends on, all live in `crypto-wiki-automation`.
-
-**Exception:** this repo owns its own committed workflow JSON. When a live n8n
-fix to a Tinnitus workflow is important or major, sync it back into the matching
-file here and commit — see the "Persisting workflow fixes" section in the skill.
+Shared n8n instance/secrets still live in `crypto-wiki-automation`
+(`.n8n-api-key`, `.pexels-api-key`, `.n8n-backups/`) — see the skill's
+Prerequisites section. This repo owns its own committed workflow JSON
+snapshots; sync important live n8n fixes back into them per the skill's
+"Persisting workflow fixes" section.

@@ -23,6 +23,27 @@ DOMAIN = "https://www.tinnitushelp.me"
 STATIC = {"/app", "/about", "/contact", "/faq", "/privacy", "/terms",
           "/disclaimer", "/blog", "/zen"}
 
+# Domains already established across the archive as citable primary sources.
+# Anything outside this set WARNs rather than FAILs - widen it deliberately.
+SOURCE_DOMAINS = {
+    "nidcd.nih.gov",          # National Institute on Deafness (NIH)
+    "entnet.org",             # AAO-HNS clinical practice guidelines
+    "ata.org",                # American Tinnitus Association
+    "nhs.uk",
+    "who.int",
+    "mayoclinic.org",
+    "cochrane.org",
+    "ncbi.nlm.nih.gov",
+    "pubmed.ncbi.nlm.nih.gov",
+    "nih.gov",
+    "cdc.gov",
+}
+
+# Tags that mark a culture/history post rather than a health one. Those set
+# medical: false, which drops the MedicalWebPage typing and the clinical
+# disclaimer - a disclaimer on an art-history piece is just noise.
+CULTURE_TAGS = {"history", "society"}
+
 # post_guidelines.md fixes this list; the Build node should emit only these.
 TAGS = {"basics", "management", "research", "psychology",
         "nutrition", "meditation", "sounds"}
@@ -91,6 +112,34 @@ def strip_tables(txt):
                      if not re.match(r"^\s*\|[\s:|-]+\|\s*$", ln))
 
 
+def fm_block(fm, key):
+    """Lines belonging to a top-level frontmatter list, e.g. `sources:`.
+
+    No YAML parser here (none is guaranteed on this machine and the rest of
+    this script is regex anyway): take the lines after `key:` that are indented
+    or start a list item, stop at the next top-level key.
+    """
+    m = re.search(rf"^{key}:[ \t]*$", fm, re.M)
+    if not m:
+        return None
+    out = []
+    for ln in fm[m.end():].split("\n")[1:]:
+        if ln.strip() and not ln[:1].isspace():
+            break
+        out.append(ln)
+    return "\n".join(out)
+
+
+def domain_of(url):
+    m = re.match(r"https?://([^/]+)", url.strip())
+    if not m:
+        return ""
+    host = m.group(1).lower()
+    # Prefix removal, not lstrip() - lstrip takes a character set and would
+    # turn "who.int" into "ho.int".
+    return host[4:] if host.startswith("www.") else host
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("mdx")
@@ -145,6 +194,66 @@ def main():
         record(WARN if legacy else PASS, "tags", ", ".join(tags) +
                ("  (legacy, outside guidelines vocab: "
                 + ", ".join(legacy) + ")" if legacy else ""))
+
+    # --- medical typing (culture/history posts opt out) ---
+    # Defaults to true, which types the page MedicalWebPage and renders the
+    # clinical disclaimer. Right for health posts, wrong on an art-history one.
+    is_medical = not re.search(r"^medical:\s*false\b", fm, re.M)
+    if is_medical and (set(tags) & CULTURE_TAGS):
+        record(WARN, "medical typing",
+               f"tags {sorted(set(tags) & CULTURE_TAGS)} look like a culture/history "
+               "post - set `medical: false` unless it really makes health claims")
+    else:
+        record(PASS, "medical typing",
+               "medical (default)" if is_medical else "medical: false (culture/history)")
+
+    # --- sources: REQUIRED on health posts (YMYL / E-E-A-T) ---
+    # Renders the References list. Every post generated in 2026 shipped without
+    # one, including serotonin-and-tinnitus, which discussed SSRI tapering and
+    # cited nothing. Optional on culture/history posts.
+    src_block = fm_block(fm, "sources")
+    urls = re.findall(r"^\s*url:\s*['\"]?([^'\"\n]+)", src_block or "", re.M)
+    titles = re.findall(r"^\s*-\s*title:", src_block or "", re.M)
+    if not is_medical:
+        record(PASS, "sources", f"{len(urls)} (optional on culture/history posts)")
+    elif not urls:
+        record(FAIL, "sources",
+               "none - a health post needs 3-5 authoritative sources "
+               "(see Step 3b in the skill)")
+    else:
+        record(PASS if 3 <= len(urls) <= 5 else WARN, "sources count",
+               f"{len(urls)} (target 3-5)")
+        if len(titles) != len(urls):
+            record(FAIL, "sources shape",
+                   f"{len(titles)} title: vs {len(urls)} url: - every entry needs both")
+        off = sorted({d for d in (domain_of(u) for u in urls)
+                      if d and d not in SOURCE_DOMAINS})
+        record(PASS if not off else WARN, "source domains",
+               "all authoritative" if not off
+               else "outside the known-authoritative set: " + ", ".join(off))
+        nohttps = [u for u in urls if not u.strip().startswith("https://")]
+        check(not nohttps, "sources are https",
+              bad_detail="not https: " + ", ".join(nohttps))
+
+    # --- faq: REQUIRED, feeds FaqSection + FAQPage JSON-LD ---
+    faq_block = fm_block(fm, "faq")
+    questions = re.findall(r"^\s*-\s*question:", faq_block or "", re.M)
+    answers = re.findall(r"^\s*answer:", faq_block or "", re.M)
+    if not questions:
+        record(FAIL, "faq",
+               "none - 4-5 entries required (renders FaqSection + FAQPage JSON-LD)")
+    else:
+        record(PASS if 4 <= len(questions) <= 5 else WARN, "faq count",
+               f"{len(questions)} (target 4-5)")
+        check(len(answers) == len(questions), "faq shape",
+              f"{len(questions)} Q/A pairs",
+              f"{len(questions)} question: vs {len(answers)} answer:")
+        # The JSON-LD takes the plain answer string, so markdown links in an
+        # answer ship as literal brackets into the structured data.
+        md = [q for q in re.findall(r"^\s*answer:\s*(.*)$", faq_block or "", re.M)
+              if re.search(r"\[[^\]]+\]\(", q)]
+        record(PASS if not md else WARN, "faq answers are plain text",
+               "ok" if not md else f"{len(md)} answer(s) contain markdown links")
 
     # --- links: count, dedupe, bold, slug validity ---
     links = re.findall(r"\[([^\]]+)\]\((/[^)]+)\)", body)

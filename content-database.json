@@ -283,6 +283,10 @@
     "serotonin-and-tinnitus": {
       "slug": "serotonin-and-tinnitus",
       "title": "Serotonin and Tinnitus"
+    },
+    "ginkgo-biloba-and-tinnitus": {
+      "slug": "ginkgo-biloba-and-tinnitus",
+      "title": "Ginkgo Biloba and Tinnitus"
     }
   },
   "zen": {
@@ -325,7 +329,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 25,
+    "blog": 26,
     "zen": 1
   }
 }

@@ -27,6 +27,11 @@
             {
               "fieldLabel": "durationSeconds",
               "requiredField": true
+            },
+            {
+              "fieldLabel": "facebookCaption",
+              "fieldType": "textarea",
+              "requiredField": false
             }
           ]
         },
@@ -45,7 +50,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// The form gives us field labels when triggered from the browser and `field-N`\n// when triggered over HTTP. Read both: a run triggered by index that silently\n// produced nulls is exactly how a previous workflow published an article about\n// the wrong subject.\nconst j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst coverUrl = pick('coverUrl', 1);\nconst caption  = pick('caption', 2);\nconst duration = Number(pick('durationSeconds', 3) || '0');\n\nfor (const [name, value] of [['videoUrl', videoUrl], ['coverUrl', coverUrl]]) {\n  if (!/^https:\\/\\//.test(value)) {\n    throw new Error(`${name} must be a public https URL, got: ${value || '(empty)'}`);\n  }\n}\nif (!caption) throw new Error('caption is empty. A Reel published with no caption cannot be edited into one later.');\n\n// Facebook Reels are 3 to 90 seconds. Instagram allows far longer, but this\n// workflow posts the same file to both, so the tighter limit is the real one.\n// Checked here rather than discovered after the bytes have been uploaded.\nif (!Number.isFinite(duration) || duration <= 0) {\n  throw new Error('durationSeconds is required so the 90 second Facebook Reels limit can be checked before uploading.');\n}\nif (duration < 3 || duration > 90) {\n  throw new Error(`This video is ${duration}s. Facebook Reels accepts 3 to 90 seconds, so it cannot be published as a Reel.`);\n}\n\nreturn [{ json: { videoUrl, coverUrl, caption, duration } }];"
+        "jsCode": "// The form gives us field labels when triggered from the browser and `field-N`\n// when triggered over HTTP. Read both: a run triggered by index that silently\n// produced nulls is exactly how a previous workflow published an article about\n// the wrong subject.\nconst j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst coverUrl = pick('coverUrl', 1);\nconst caption  = pick('caption', 2);\nconst duration = Number(pick('durationSeconds', 3) || '0');\n// Facebook Reel caption is separate so a clickable article link can ride the\n// Facebook post without showing as dead text on Instagram, where caption links\n// are not tappable. Optional: blank means reuse the Instagram caption as-is.\nconst facebookCaption = pick('facebookCaption', 4) || caption;\n\nfor (const [name, value] of [['videoUrl', videoUrl], ['coverUrl', coverUrl]]) {\n  if (!/^https:\\/\\//.test(value)) {\n    throw new Error(`${name} must be a public https URL, got: ${value || '(empty)'}`);\n  }\n}\nif (!caption) throw new Error('caption is empty. A Reel published with no caption cannot be edited into one later.');\n\n// Facebook Reels are 3 to 90 seconds. Instagram allows far longer, but this\n// workflow posts the same file to both, so the tighter limit is the real one.\n// Checked here rather than discovered after the bytes have been uploaded.\nif (!Number.isFinite(duration) || duration <= 0) {\n  throw new Error('durationSeconds is required so the 90 second Facebook Reels limit can be checked before uploading.');\n}\nif (duration < 3 || duration > 90) {\n  throw new Error(`This video is ${duration}s. Facebook Reels accepts 3 to 90 seconds, so it cannot be published as a Reel.`);\n}\n\nreturn [{ json: { videoUrl, coverUrl, caption, facebookCaption, duration } }];"
       },
       "name": "Normalise Input",
       "type": "n8n-nodes-base.code",
@@ -315,7 +320,7 @@
               },
               {
                 "name": "description",
-                "value": "={{ $('Normalise Input').item.json.caption }}"
+                "value": "={{ $('Normalise Input').item.json.facebookCaption }}"
               }
             ]
           }
@@ -338,7 +343,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// One place to read what actually happened. Both platforms report success\n// differently \u2014 Instagram returns the published media id, Facebook Reels\n// returns {success:true} and the id came back in the start phase.\nconst v = $('Normalise Input').item.json;\nreturn [{ json: {\n  instagramMediaId: $('IG Publish').item.json.id ?? null,\n  facebookVideoId: $('FB Reel Start').item.json.video_id ?? null,\n  facebookFinished: $('FB Reel Finish').item.json.success === true,\n  caption: v.caption,\n  durationSeconds: v.duration,\n  // Cosmetic and deliberately non-fatal: both cover nodes are\n  // continueRegularOutput, because they run *after* the Reel is\n  // already live on both platforms and must never fail a published run.\n  facebookCoverSet: $('FB Set Reel Cover').item.json?.id != null\n                 || $('FB Set Reel Cover').item.json?.success === true,\n} }];"
+        "jsCode": "// One place to read what actually happened. Both platforms report success\n// differently \u2014 Instagram returns the published media id, Facebook Reels\n// returns {success:true} and the id came back in the start phase.\nconst v = $('Normalise Input').item.json;\nreturn [{ json: {\n  instagramMediaId: $('IG Publish').item.json.id ?? null,\n  facebookVideoId: $('FB Reel Start').item.json.video_id ?? null,\n  facebookFinished: $('FB Reel Finish').item.json.success === true,\n  caption: v.caption,\n  facebookCaption: v.facebookCaption,\n  durationSeconds: v.duration,\n  // Cosmetic and deliberately non-fatal: both cover nodes are\n  // continueRegularOutput, because they run *after* the Reel is\n  // already live on both platforms and must never fail a published run.\n  facebookCoverSet: $('FB Set Reel Cover').item.json?.id != null\n                 || $('FB Set Reel Cover').item.json?.success === true,\n} }];"
       },
       "name": "Summary",
       "type": "n8n-nodes-base.code",
@@ -605,6 +610,11 @@
               {
                 "fieldLabel": "durationSeconds",
                 "requiredField": true
+              },
+              {
+                "fieldLabel": "facebookCaption",
+                "fieldType": "textarea",
+                "requiredField": false
               }
             ]
           },
@@ -623,7 +633,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// The form gives us field labels when triggered from the browser and `field-N`\n// when triggered over HTTP. Read both: a run triggered by index that silently\n// produced nulls is exactly how a previous workflow published an article about\n// the wrong subject.\nconst j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst coverUrl = pick('coverUrl', 1);\nconst caption  = pick('caption', 2);\nconst duration = Number(pick('durationSeconds', 3) || '0');\n\nfor (const [name, value] of [['videoUrl', videoUrl], ['coverUrl', coverUrl]]) {\n  if (!/^https:\\/\\//.test(value)) {\n    throw new Error(`${name} must be a public https URL, got: ${value || '(empty)'}`);\n  }\n}\nif (!caption) throw new Error('caption is empty. A Reel published with no caption cannot be edited into one later.');\n\n// Facebook Reels are 3 to 90 seconds. Instagram allows far longer, but this\n// workflow posts the same file to both, so the tighter limit is the real one.\n// Checked here rather than discovered after the bytes have been uploaded.\nif (!Number.isFinite(duration) || duration <= 0) {\n  throw new Error('durationSeconds is required so the 90 second Facebook Reels limit can be checked before uploading.');\n}\nif (duration < 3 || duration > 90) {\n  throw new Error(`This video is ${duration}s. Facebook Reels accepts 3 to 90 seconds, so it cannot be published as a Reel.`);\n}\n\nreturn [{ json: { videoUrl, coverUrl, caption, duration } }];"
+          "jsCode": "// The form gives us field labels when triggered from the browser and `field-N`\n// when triggered over HTTP. Read both: a run triggered by index that silently\n// produced nulls is exactly how a previous workflow published an article about\n// the wrong subject.\nconst j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst coverUrl = pick('coverUrl', 1);\nconst caption  = pick('caption', 2);\nconst duration = Number(pick('durationSeconds', 3) || '0');\n// Facebook Reel caption is separate so a clickable article link can ride the\n// Facebook post without showing as dead text on Instagram, where caption links\n// are not tappable. Optional: blank means reuse the Instagram caption as-is.\nconst facebookCaption = pick('facebookCaption', 4) || caption;\n\nfor (const [name, value] of [['videoUrl', videoUrl], ['coverUrl', coverUrl]]) {\n  if (!/^https:\\/\\//.test(value)) {\n    throw new Error(`${name} must be a public https URL, got: ${value || '(empty)'}`);\n  }\n}\nif (!caption) throw new Error('caption is empty. A Reel published with no caption cannot be edited into one later.');\n\n// Facebook Reels are 3 to 90 seconds. Instagram allows far longer, but this\n// workflow posts the same file to both, so the tighter limit is the real one.\n// Checked here rather than discovered after the bytes have been uploaded.\nif (!Number.isFinite(duration) || duration <= 0) {\n  throw new Error('durationSeconds is required so the 90 second Facebook Reels limit can be checked before uploading.');\n}\nif (duration < 3 || duration > 90) {\n  throw new Error(`This video is ${duration}s. Facebook Reels accepts 3 to 90 seconds, so it cannot be published as a Reel.`);\n}\n\nreturn [{ json: { videoUrl, coverUrl, caption, facebookCaption, duration } }];"
         },
         "name": "Normalise Input",
         "type": "n8n-nodes-base.code",
@@ -893,7 +903,7 @@
                 },
                 {
                   "name": "description",
-                  "value": "={{ $('Normalise Input').item.json.caption }}"
+                  "value": "={{ $('Normalise Input').item.json.facebookCaption }}"
                 }
               ]
             }
@@ -916,7 +926,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// One place to read what actually happened. Both platforms report success\n// differently \u2014 Instagram returns the published media id, Facebook Reels\n// returns {success:true} and the id came back in the start phase.\nconst v = $('Normalise Input').item.json;\nreturn [{ json: {\n  instagramMediaId: $('IG Publish').item.json.id ?? null,\n  facebookVideoId: $('FB Reel Start').item.json.video_id ?? null,\n  facebookFinished: $('FB Reel Finish').item.json.success === true,\n  caption: v.caption,\n  durationSeconds: v.duration,\n  // Cosmetic and deliberately non-fatal: both cover nodes are\n  // continueRegularOutput, because they run *after* the Reel is\n  // already live on both platforms and must never fail a published run.\n  facebookCoverSet: $('FB Set Reel Cover').item.json?.id != null\n                 || $('FB Set Reel Cover').item.json?.success === true,\n} }];"
+          "jsCode": "// One place to read what actually happened. Both platforms report success\n// differently \u2014 Instagram returns the published media id, Facebook Reels\n// returns {success:true} and the id came back in the start phase.\nconst v = $('Normalise Input').item.json;\nreturn [{ json: {\n  instagramMediaId: $('IG Publish').item.json.id ?? null,\n  facebookVideoId: $('FB Reel Start').item.json.video_id ?? null,\n  facebookFinished: $('FB Reel Finish').item.json.success === true,\n  caption: v.caption,\n  facebookCaption: v.facebookCaption,\n  durationSeconds: v.duration,\n  // Cosmetic and deliberately non-fatal: both cover nodes are\n  // continueRegularOutput, because they run *after* the Reel is\n  // already live on both platforms and must never fail a published run.\n  facebookCoverSet: $('FB Set Reel Cover').item.json?.id != null\n                 || $('FB Set Reel Cover').item.json?.success === true,\n} }];"
         },
         "name": "Summary",
         "type": "n8n-nodes-base.code",

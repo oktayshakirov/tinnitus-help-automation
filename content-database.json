@@ -291,6 +291,10 @@
     "somatic-tinnitus": {
       "slug": "somatic-tinnitus",
       "title": "Somatic Tinnitus"
+    },
+    "can-ear-infections-cause-tinnitus": {
+      "slug": "can-ear-infections-cause-tinnitus",
+      "title": "Can Ear Infections Cause Tinnitus?"
     }
   },
   "zen": {
@@ -333,7 +337,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 27,
+    "blog": 28,
     "zen": 1
   }
 }

@@ -295,6 +295,10 @@
     "can-ear-infections-cause-tinnitus": {
       "slug": "can-ear-infections-cause-tinnitus",
       "title": "Can Ear Infections Cause Tinnitus?"
+    },
+    "the-finger-drumming-trick-for-tinnitus": {
+      "slug": "the-finger-drumming-trick-for-tinnitus",
+      "title": "The Finger Drumming Trick for Tinnitus"
     }
   },
   "zen": {
@@ -337,7 +341,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 28,
+    "blog": 29,
     "zen": 1
   }
 }

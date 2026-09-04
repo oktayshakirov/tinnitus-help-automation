@@ -299,6 +299,10 @@
     "the-finger-drumming-trick-for-tinnitus": {
       "slug": "the-finger-drumming-trick-for-tinnitus",
       "title": "The Finger Drumming Trick for Tinnitus"
+    },
+    "ear-piercings-and-tinnitus": {
+      "slug": "ear-piercings-and-tinnitus",
+      "title": "Ear Piercings and Tinnitus"
     }
   },
   "zen": {
@@ -341,7 +345,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 29,
+    "blog": 30,
     "zen": 1
   }
 }

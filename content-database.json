@@ -303,6 +303,10 @@
     "ear-piercings-and-tinnitus": {
       "slug": "ear-piercings-and-tinnitus",
       "title": "Ear Piercings and Tinnitus"
+    },
+    "tinnitus-and-diabetes-the-blood-sugar-link": {
+      "slug": "tinnitus-and-diabetes-the-blood-sugar-link",
+      "title": "Tinnitus and Diabetes: The Blood Sugar Link"
     }
   },
   "zen": {
@@ -345,7 +349,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 30,
+    "blog": 31,
     "zen": 1
   }
 }

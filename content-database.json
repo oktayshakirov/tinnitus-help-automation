@@ -307,6 +307,10 @@
     "tinnitus-and-diabetes-the-blood-sugar-link": {
       "slug": "tinnitus-and-diabetes-the-blood-sugar-link",
       "title": "Tinnitus and Diabetes: The Blood Sugar Link"
+    },
+    "new-tinnitus-what-to-do-first-week": {
+      "slug": "new-tinnitus-what-to-do-first-week",
+      "title": "New Tinnitus What To Do First Week"
     }
   },
   "zen": {
@@ -349,7 +353,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 31,
+    "blog": 32,
     "zen": 1
   }
 }

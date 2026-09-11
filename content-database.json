@@ -311,6 +311,10 @@
     "new-tinnitus-what-to-do-first-week": {
       "slug": "new-tinnitus-what-to-do-first-week",
       "title": "New Tinnitus What To Do First Week"
+    },
+    "tinnitus-and-vaping": {
+      "slug": "tinnitus-and-vaping",
+      "title": "Tinnitus and Vaping"
     }
   },
   "zen": {
@@ -353,7 +357,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 32,
+    "blog": 33,
     "zen": 1
   }
 }

@@ -315,6 +315,10 @@
     "tinnitus-and-vaping": {
       "slug": "tinnitus-and-vaping",
       "title": "Tinnitus and Vaping"
+    },
+    "tinnitus-after-a-concert": {
+      "slug": "tinnitus-after-a-concert",
+      "title": "Tinnitus After a Concert"
     }
   },
   "zen": {
@@ -357,7 +361,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 33,
+    "blog": 34,
     "zen": 1
   }
 }

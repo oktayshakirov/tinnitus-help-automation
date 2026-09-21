@@ -319,6 +319,10 @@
     "tinnitus-after-a-concert": {
       "slug": "tinnitus-after-a-concert",
       "title": "Tinnitus After a Concert"
+    },
+    "tinnitus-and-allergies": {
+      "slug": "tinnitus-and-allergies",
+      "title": "Tinnitus and Allergies"
     }
   },
   "zen": {
@@ -361,7 +365,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 34,
+    "blog": 35,
     "zen": 1
   }
 }

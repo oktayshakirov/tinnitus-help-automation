@@ -323,6 +323,10 @@
     "tinnitus-and-allergies": {
       "slug": "tinnitus-and-allergies",
       "title": "Tinnitus and Allergies"
+    },
+    "reactive-tinnitus": {
+      "slug": "reactive-tinnitus",
+      "title": "Reactive Tinnitus"
     }
   },
   "zen": {

@@ -327,6 +327,10 @@
     "reactive-tinnitus": {
       "slug": "reactive-tinnitus",
       "title": "Reactive Tinnitus"
+    },
+    "tinnitus-retraining-therapy": {
+      "slug": "tinnitus-retraining-therapy",
+      "title": "Tinnitus Retraining Therapy"
     }
   },
   "zen": {
@@ -369,7 +373,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 36,
+    "blog": 37,
     "zen": 1
   }
 }

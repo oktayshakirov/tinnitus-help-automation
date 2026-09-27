@@ -1,16 +1,35 @@
 {
+  "updatedAt": "2026-09-27T15:15:59.740Z",
+  "createdAt": "2025-11-28T01:21:27.004Z",
+  "id": "jtUStrxCt23FGNDk",
   "name": "Tinnitus Help: Share Post",
+  "description": null,
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
-      "parameters": {},
-      "id": "47f18ba0-acfc-4c85-abd8-b709d90e5c8e",
-      "name": "Manual Trigger (Social Share)",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
+      "parameters": {
+        "formTitle": "Tinnitus Help: Share Post",
+        "formDescription": "Internal trigger: slug.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "slug",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "92c085b8-371c-4cc0-9dc9-26df4bcae373",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
       "position": [
-        -1904,
-        656
-      ]
+        -1888,
+        48
+      ],
+      "webhookId": "0eee75e0-742a-41b2-8135-d4359329ed4e"
     },
     {
       "parameters": {
@@ -18,19 +37,19 @@
           "string": [
             {
               "name": "slug",
-              "value": "tinnitus-impact-on-mental-health"
+              "value": "={{ $json.slug }}"
             }
           ]
         },
         "options": {}
       },
-      "id": "3b20f160-e652-43a0-b1d0-418d17837c7e",
+      "id": "6b717548-e6d0-4efe-8cc7-8ac3b4c6fb53",
       "name": "Set Slug",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
       "position": [
-        -1760,
-        656
+        -1744,
+        48
       ]
     },
     {
@@ -51,13 +70,13 @@
         "asBinaryProperty": false,
         "additionalParameters": {}
       },
-      "id": "65743700-10ab-43a1-acfd-eede7c9b04f0",
+      "id": "73d58d4e-ac4c-4905-afb7-152fb4141a82",
       "name": "Get Post MDX",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
       "position": [
-        -1616,
-        656
+        -1600,
+        48
       ],
       "webhookId": "91df1748-e0c3-4c14-8bc7-058c2545e03d",
       "credentials": {
@@ -69,15 +88,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
+        "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)\\n---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    if (/^\\s/.test(line) || line.trim().startsWith('-')) return;\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
       },
-      "id": "aff4a8e8-5d91-4dbb-b658-27d908384a77",
+      "id": "7ecce0d3-de7b-460f-80fe-9730247e5f2f",
       "name": "Parse Frontmatter",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        -1456,
-        656
+        -1440,
+        48
       ]
     },
     {
@@ -106,17 +125,17 @@
           ]
         }
       },
-      "id": "8f69e63e-e399-4b46-8f9d-6e6dcc30dee7",
+      "id": "9dfbf799-5e36-4465-8ce0-9f930287b00f",
       "name": "Create an image",
       "type": "n8n-nodes-base.apiTemplateIo",
       "typeVersion": 1,
       "position": [
-        -1312,
-        656
+        -1296,
+        48
       ],
       "credentials": {
         "apiTemplateIoApi": {
-          "id": "VtZS5IMyzrgGCOmS",
+          "id": "0SUDArAaMkmmEJVN",
           "name": "APITemplate.io (TinnitusHelp)"
         }
       }
@@ -132,13 +151,13 @@
           }
         }
       },
-      "id": "5d14faf0-33ee-4c1b-840d-9522c7da64bd",
+      "id": "ed2ce021-3c4f-4fdd-bc6c-0d12dd06bcad",
       "name": "Download APITemplate Image",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1152,
-        656
+        -1136,
+        48
       ]
     },
     {
@@ -158,13 +177,13 @@
         "binaryData": true,
         "commitMessage": "new automated image"
       },
-      "id": "003b0076-10af-4ef5-8d6f-0308c942f3a1",
+      "id": "862738a4-bdde-48a8-aedd-419bf31a96bc",
       "name": "Upload to GitHub",
       "type": "n8n-nodes-base.github",
       "typeVersion": 1,
       "position": [
-        -976,
-        656
+        -960,
+        48
       ],
       "webhookId": "8c7ce9b9-6fc0-49de-944a-19a21dda4d06",
       "credentials": {
@@ -176,15 +195,15 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://tinnitushelp.me/blog\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  👉 Read more: {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = `${description}  👉 Read more at tinnitushelp.me`;\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/${slug}.png`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
+        "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://tinnitushelp.me/blog\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  Read more: \ud83d\udc47 {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = variant.replace(\"{{link}}\", \"\ud83d\udc47 Read more at tinnitushelp.me\");\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/${slug}.png?v=${Date.now()}`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
       },
-      "id": "2d6ba9e5-63e6-4704-8c49-597073acd74e",
+      "id": "6985e489-b4f5-4855-b8ee-7b19e23947cf",
       "name": "Format Social Post",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        -816,
-        656
+        -800,
+        48
       ]
     },
     {
@@ -208,17 +227,17 @@
           }
         }
       },
-      "id": "fb547945-3871-4527-912f-b5c27015172d",
+      "id": "4624caab-a8d7-4041-9e6c-6efb50a73be6",
       "name": "Instagram Create Media",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        -592,
-        656
+        -576,
+        48
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "Ydx1TfHeHlMX2ILQ",
+          "id": "ltfxXBWtUWu9wRg3",
           "name": "Facebook Graph (TinnitusHelp)"
         }
       }
@@ -244,17 +263,17 @@
           }
         }
       },
-      "id": "de33063c-848d-4af6-a3f8-578eeebd024b",
+      "id": "b69aa150-11e8-4eac-950e-8ca78c50fa9f",
       "name": "Facebook Post",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        -576,
-        240
+        -560,
+        -368
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "Ydx1TfHeHlMX2ILQ",
+          "id": "ltfxXBWtUWu9wRg3",
           "name": "Facebook Graph (TinnitusHelp)"
         }
       }
@@ -276,17 +295,17 @@
           }
         }
       },
-      "id": "ee785b7a-986a-4cf4-a15d-4243e664bdc0",
+      "id": "2dfbf5a1-3a10-4d0c-8d8b-c015185078eb",
       "name": "Instagram Post",
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        -368,
-        656
+        -272,
+        48
       ],
       "credentials": {
         "facebookGraphApi": {
-          "id": "Ydx1TfHeHlMX2ILQ",
+          "id": "ltfxXBWtUWu9wRg3",
           "name": "Facebook Graph (TinnitusHelp)"
         }
       }
@@ -295,7 +314,7 @@
       "parameters": {
         "operation": "sendPhoto",
         "chatId": "@tinnitushelpme",
-        "file": "={{$json.imageUrl}}",
+        "binaryData": true,
         "additionalFields": {
           "caption": "={{$json.twitter}}"
         }
@@ -303,16 +322,16 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -464,
-        848
+        -448,
+        240
       ],
-      "id": "0a004431-8432-4473-bc79-ee3fef733aa1",
+      "id": "e9433cae-b2d8-493b-a0ec-59dfc65c6de9",
       "name": "Telegram Post",
       "webhookId": "64019144-1c77-4b4f-93a0-a9a579593793",
       "credentials": {
         "telegramApi": {
           "id": "4rLRmLOvcIlidonP",
-          "name": "Telegram (TinnitusHelp)"
+          "name": "Telegram (TinniusHelp)"
         }
       }
     },
@@ -338,10 +357,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -544,
-        448
+        -528,
+        -160
       ],
-      "id": "9833eb03-7f2b-40f9-8c65-14683a5d41aa",
+      "id": "f0353a55-1f29-4b16-a42a-8f0121262299",
       "name": "Upload Media to Twitter",
       "credentials": {
         "twitterOAuth2Api": {
@@ -349,10 +368,24 @@
           "name": "X OAuth 2.0 (CryptoWiki)"
         },
         "twitterOAuth1Api": {
-          "id": "OLqoGK3w0RSKKDuB",
+          "id": "UE74TiXdMhp0RYDI",
           "name": "X OAuth 1.0 (TinnitusHelp)"
         }
       }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        48
+      ],
+      "id": "e1a6fcdf-fa6d-434a-b381-9842a0934d03",
+      "name": "Wait",
+      "webhookId": "78f72f10-2c86-4d47-8d4e-65e636200971"
     },
     {
       "parameters": {
@@ -361,35 +394,37 @@
           "attachments": "={{ $json.media_id_string }}"
         }
       },
-      "id": "7ba15f74-a46b-4e29-b090-579ecda21570",
-      "name": "Create Tweet1",
+      "id": "8ef4f2a3-d674-40a5-a5cf-03836697b7c9",
+      "name": "Create Tweet",
       "type": "n8n-nodes-base.twitter",
       "typeVersion": 2,
       "position": [
-        -352,
-        384
+        -336,
+        -224
       ],
       "credentials": {
         "twitterOAuth2Api": {
-          "id": "glLGJiFIa282EI65",
+          "id": "WEJEsTH7bk3jpU4n",
           "name": "X OAuth 2.0 (TinnitusHelp)"
         }
       }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -768,
+        224
+      ],
+      "id": "d9743af7-b578-4648-8510-dfb91180e104",
+      "name": "Wait for image CDN",
+      "webhookId": "07c0bfd3-4832-4cdf-a8df-99ad22fd817e"
     }
   ],
-  "pinData": {},
   "connections": {
-    "Manual Trigger (Social Share)": {
-      "main": [
-        [
-          {
-            "node": "Set Slug",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Set Slug": {
       "main": [
         [
@@ -449,7 +484,7 @@
       "main": [
         [
           {
-            "node": "Format Social Post",
+            "node": "Wait for image CDN",
             "type": "main",
             "index": 0
           }
@@ -473,16 +508,22 @@
             "node": "Facebook Post",
             "type": "main",
             "index": 0
-          },
+          }
+        ]
+      ]
+    },
+    "Instagram Create Media": {
+      "main": [
+        [
           {
-            "node": "Upload Media to Twitter",
+            "node": "Wait",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Instagram Create Media": {
+    "Wait": {
       "main": [
         [
           {
@@ -493,11 +534,22 @@
         ]
       ]
     },
-    "Upload Media to Twitter": {
+    "Form Trigger": {
       "main": [
         [
           {
-            "node": "Create Tweet1",
+            "node": "Set Slug",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for image CDN": {
+      "main": [
+        [
+          {
+            "node": "Format Social Post",
             "type": "main",
             "index": 0
           }
@@ -505,15 +557,626 @@
       ]
     }
   },
-  "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v0",
+    "availableInMCP": true,
+    "binaryMode": "separate"
   },
-  "versionId": "2072d9c5-8f56-4fc6-ac01-8a1b6fa4b256",
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "002b5e092f04f4d75aa57fd214532db5fa3d65fe608d265bda2ed541d575f595"
+    "templateCredsSetupCompleted": true
   },
-  "id": "V3Ef1FFVFdyinxka",
-  "tags": []
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "8d7cfc4d-64dd-4fa0-a475-94900856d329",
+  "activeVersionId": "8d7cfc4d-64dd-4fa0-a475-94900856d329",
+  "versionCounter": 30,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2025-11-28T01:21:27.007Z",
+      "createdAt": "2025-11-28T01:21:27.007Z",
+      "role": "workflow:owner",
+      "workflowId": "jtUStrxCt23FGNDk",
+      "projectId": "DclWPKscbGB9W1Dg",
+      "project": {
+        "updatedAt": "2025-09-10T22:50:04.155Z",
+        "createdAt": "2025-09-10T22:48:48.404Z",
+        "id": "DclWPKscbGB9W1Dg",
+        "name": "Oktay Shakirov <oktayshakirov@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-09-27T15:15:59.742Z",
+    "createdAt": "2026-09-27T15:15:59.742Z",
+    "versionId": "8d7cfc4d-64dd-4fa0-a475-94900856d329",
+    "workflowId": "jtUStrxCt23FGNDk",
+    "nodes": [
+      {
+        "parameters": {
+          "formTitle": "Tinnitus Help: Share Post",
+          "formDescription": "Internal trigger: slug.",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "slug",
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "92c085b8-371c-4cc0-9dc9-26df4bcae373",
+        "name": "Form Trigger",
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.2,
+        "position": [
+          -1888,
+          48
+        ],
+        "webhookId": "0eee75e0-742a-41b2-8135-d4359329ed4e"
+      },
+      {
+        "parameters": {
+          "values": {
+            "string": [
+              {
+                "name": "slug",
+                "value": "={{ $json.slug }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "6b717548-e6d0-4efe-8cc7-8ac3b4c6fb53",
+        "name": "Set Slug",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [
+          -1744,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "value": "oktayshakirov",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "tinnitus-blog",
+            "mode": "name"
+          },
+          "filePath": "=content/posts/{{$json.slug}}.mdx",
+          "asBinaryProperty": false,
+          "additionalParameters": {}
+        },
+        "id": "73d58d4e-ac4c-4905-afb7-152fb4141a82",
+        "name": "Get Post MDX",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          -1600,
+          48
+        ],
+        "webhookId": "91df1748-e0c3-4c14-8bc7-058c2545e03d",
+        "credentials": {
+          "githubApi": {
+            "id": "PGPD26vSgTS2AeM8",
+            "name": "GitHub account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)\\n---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    if (/^\\s/.test(line) || line.trim().startsWith('-')) return;\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
+        },
+        "id": "7ecce0d3-de7b-460f-80fe-9730247e5f2f",
+        "name": "Parse Frontmatter",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 1,
+        "position": [
+          -1440,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "imageTemplateId": "5d677b23dcfff87a",
+          "overridesUi": {
+            "overrideValues": [
+              {
+                "propertiesUi": {
+                  "propertyValues": [
+                    {
+                      "key": "image.src",
+                      "value": "={{$json.image}}"
+                    },
+                    {
+                      "key": "title.text",
+                      "value": "={{$json.name}}"
+                    },
+                    {
+                      "key": "description.text",
+                      "value": "={{$json.description}}"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "id": "9dfbf799-5e36-4465-8ce0-9f930287b00f",
+        "name": "Create an image",
+        "type": "n8n-nodes-base.apiTemplateIo",
+        "typeVersion": 1,
+        "position": [
+          -1296,
+          48
+        ],
+        "credentials": {
+          "apiTemplateIoApi": {
+            "id": "0SUDArAaMkmmEJVN",
+            "name": "APITemplate.io (TinnitusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{$json.download_url_png || $json.download_url || $json.url || $json.image_url || $json.image}}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "ed2ce021-3c4f-4fdd-bc6c-0d12dd06bcad",
+        "name": "Download APITemplate Image",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -1136,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "owner": {
+            "__rl": true,
+            "value": "oktayshakirov",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "tinnitus-help-automation",
+            "mode": "name"
+          },
+          "filePath": "=images/posts/{{$('Set Slug').item.json.slug}}.png",
+          "binaryData": true,
+          "commitMessage": "new automated image"
+        },
+        "id": "862738a4-bdde-48a8-aedd-419bf31a96bc",
+        "name": "Upload to GitHub",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          -960,
+          48
+        ],
+        "webhookId": "8c7ce9b9-6fc0-49de-944a-19a21dda4d06",
+        "credentials": {
+          "githubApi": {
+            "id": "PGPD26vSgTS2AeM8",
+            "name": "GitHub account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "return $input.all().map(item => {\n  const description = $('Parse Frontmatter').item.json.description || \"\";\n  const link = $('Parse Frontmatter').item.json.link || \"http://tinnitushelp.me/blog\";\n  const slug = $('Set Slug').item.json.slug || \"post\";\n\n  const variants = [\n    `${description}  Read more: \ud83d\udc47 {{link}}`\n  ];\n\n  const variant = variants[Math.floor(Math.random() * variants.length)];\n  const fbTwPost = variant.replace(\"{{link}}\", link);\n  const igPost = variant.replace(\"{{link}}\", \"\ud83d\udc47 Read more at tinnitushelp.me\");\n  const instagramImageUrl = `https://raw.githubusercontent.com/oktayshakirov/tinnitus-help-automation/refs/heads/main/images/posts/${slug}.png?v=${Date.now()}`;\n    const binary = $('Download APITemplate Image').item.binary || {};\n\n  return {\n    json: {\n      ...item.json,\n      facebook: fbTwPost,\n      twitter: fbTwPost,\n      instagramCaption: igPost,\n      imageUrl: instagramImageUrl,\n      link: link\n    },\n    binary\n  };\n});\n"
+        },
+        "id": "6985e489-b4f5-4855-b8ee-7b19e23947cf",
+        "name": "Format Social Post",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 1,
+        "position": [
+          -800,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "17841477062009382",
+          "edge": "media",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "image_url",
+                  "value": "={{$json.imageUrl}}"
+                },
+                {
+                  "name": "caption",
+                  "value": "={{$json.instagramCaption}}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "4624caab-a8d7-4041-9e6c-6efb50a73be6",
+        "name": "Instagram Create Media",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          -576,
+          48
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "me",
+          "edge": "feed",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "message",
+                  "value": "={{$json.facebook}}"
+                },
+                {
+                  "name": "link",
+                  "value": "={{$json.link}}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "b69aa150-11e8-4eac-950e-8ca78c50fa9f",
+        "name": "Facebook Post",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          -560,
+          -368
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "17841477062009382",
+          "edge": "media_publish",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "creation_id",
+                  "value": "={{$json.id}}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "2dfbf5a1-3a10-4d0c-8d8b-c015185078eb",
+        "name": "Instagram Post",
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          -272,
+          48
+        ],
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "sendPhoto",
+          "chatId": "@tinnitushelpme",
+          "binaryData": true,
+          "additionalFields": {
+            "caption": "={{$json.twitter}}"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          -448,
+          240
+        ],
+        "id": "e9433cae-b2d8-493b-a0ec-59dfc65c6de9",
+        "name": "Telegram Post",
+        "webhookId": "64019144-1c77-4b4f-93a0-a9a579593793",
+        "credentials": {
+          "telegramApi": {
+            "id": "4rLRmLOvcIlidonP",
+            "name": "Telegram (TinniusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://upload.twitter.com/1.1/media/upload.json",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "twitterOAuth1Api",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "media",
+                "inputDataFieldName": "data"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -528,
+          -160
+        ],
+        "id": "f0353a55-1f29-4b16-a42a-8f0121262299",
+        "name": "Upload Media to Twitter",
+        "credentials": {
+          "twitterOAuth2Api": {
+            "id": "QT8bLYGAdrhMNYdJ",
+            "name": "X OAuth 2.0 (CryptoWiki)"
+          },
+          "twitterOAuth1Api": {
+            "id": "UE74TiXdMhp0RYDI",
+            "name": "X OAuth 1.0 (TinnitusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 3
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          -432,
+          48
+        ],
+        "id": "e1a6fcdf-fa6d-434a-b381-9842a0934d03",
+        "name": "Wait",
+        "webhookId": "78f72f10-2c86-4d47-8d4e-65e636200971"
+      },
+      {
+        "parameters": {
+          "text": "={{ $('Format Social Post').item.json.twitter }}\n",
+          "additionalFields": {
+            "attachments": "={{ $json.media_id_string }}"
+          }
+        },
+        "id": "8ef4f2a3-d674-40a5-a5cf-03836697b7c9",
+        "name": "Create Tweet",
+        "type": "n8n-nodes-base.twitter",
+        "typeVersion": 2,
+        "position": [
+          -336,
+          -224
+        ],
+        "credentials": {
+          "twitterOAuth2Api": {
+            "id": "WEJEsTH7bk3jpU4n",
+            "name": "X OAuth 2.0 (TinnitusHelp)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 30
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          -768,
+          224
+        ],
+        "id": "d9743af7-b578-4648-8510-dfb91180e104",
+        "name": "Wait for image CDN",
+        "webhookId": "07c0bfd3-4832-4cdf-a8df-99ad22fd817e"
+      }
+    ],
+    "connections": {
+      "Set Slug": {
+        "main": [
+          [
+            {
+              "node": "Get Post MDX",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Post MDX": {
+        "main": [
+          [
+            {
+              "node": "Parse Frontmatter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Frontmatter": {
+        "main": [
+          [
+            {
+              "node": "Create an image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create an image": {
+        "main": [
+          [
+            {
+              "node": "Download APITemplate Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download APITemplate Image": {
+        "main": [
+          [
+            {
+              "node": "Upload to GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload to GitHub": {
+        "main": [
+          [
+            {
+              "node": "Wait for image CDN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Social Post": {
+        "main": [
+          [
+            {
+              "node": "Telegram Post",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Instagram Create Media",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Facebook Post",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Instagram Create Media": {
+        "main": [
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "Instagram Post",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Form Trigger": {
+        "main": [
+          [
+            {
+              "node": "Set Slug",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait for image CDN": {
+        "main": [
+          [
+            {
+              "node": "Format Social Post",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Oktay Shakirov",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-09-27T15:15:59.770Z",
+        "id": 278,
+        "workflowId": "jtUStrxCt23FGNDk",
+        "versionId": "8d7cfc4d-64dd-4fa0-a475-94900856d329",
+        "event": "activated",
+        "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      },
+      {
+        "createdAt": "2026-09-27T15:15:59.765Z",
+        "id": 277,
+        "workflowId": "jtUStrxCt23FGNDk",
+        "versionId": "8d7cfc4d-64dd-4fa0-a475-94900856d329",
+        "event": "deactivated",
+        "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
+      }
+    ]
+  }
 }

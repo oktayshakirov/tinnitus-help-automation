@@ -331,6 +331,10 @@
     "tinnitus-retraining-therapy": {
       "slug": "tinnitus-retraining-therapy",
       "title": "Tinnitus Retraining Therapy"
+    },
+    "migraine-and-tinnitus": {
+      "slug": "migraine-and-tinnitus",
+      "title": "Migraine and Tinnitus"
     }
   },
   "zen": {
@@ -373,7 +377,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 37,
+    "blog": 38,
     "zen": 1
   }
 }

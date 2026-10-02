@@ -8,7 +8,7 @@
     {
       "parameters": {
         "formTitle": "Tinnitus Help: Publish Facebook Video",
-        "formDescription": "Native long-form video upload to the Page feed (not a Reel \u2014 no duration limit). videoUrl and thumbUrl must be publicly reachable for the length of the run.",
+        "formDescription": "Native long-form video upload to the Page feed (not a Reel — no duration limit). videoUrl and thumbUrl must be publicly reachable for the length of the run.",
         "formFields": {
           "values": [
             {
@@ -49,7 +49,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst title = pick('title', 1);\nconst rawDescription = pick('description', 2);\nconst thumbUrl = pick('thumbUrl', 3);\n\nif (!/^https:\\/\\//.test(videoUrl)) {\n  throw new Error(`videoUrl must be a public https URL, got: ${videoUrl || '(empty)'}`);\n}\nif (!title) throw new Error('title is empty.');\nif (thumbUrl && !/^https:\\/\\//.test(thumbUrl)) {\n  throw new Error(`thumbUrl must be a public https URL if given, got: ${thumbUrl}`);\n}\n\n// A YouTube description is written for YouTube: hook, then the article link,\n// then a second summary, chapters, and a repeat of the link. Pasting all of it\n// under a Facebook video buries the one line a reader acts on and prints the\n// same URL twice. Facebook gets the first paragraph and the link, nothing else.\n//\n// The trim happens here rather than at the caller so it cannot be forgotten:\n// the workflow is handed the full YouTube description and decides what to post.\nfunction trimForFacebook(text) {\n  if (!text) return '';\n  const paragraphs = text.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean);\n  const first = paragraphs[0] ?? '';\n\n  // Carry the link's own line verbatim rather than relabelling it. An article\n  // video says \"Full article: <url>\"; a sound session says \"More at <url>\" and\n  // has no article behind it, so printing \"Full article\" there would be a lie.\n  // Prefer the labelled form because these descriptions repeat the same URL at\n  // the bottom under different wording, and the first one is canonical.\n  const lines = text.split('\\n').map((l) => l.trim());\n  const linkLine =\n    lines.find((l) => /^Full article:\\s*https?:\\/\\/\\S+/.test(l)) ??\n    lines.find((l) => /https?:\\/\\/\\S+/.test(l));\n\n  if (!linkLine || first.includes(linkLine)) return first;\n  return `${first}\\n\\n${linkLine}`;\n}\n\n// **The Telegram share takes the YouTube URL, not the tunnel URL.** `videoUrl`\n// above is an ephemeral trycloudflare address that Facebook reads once and\n// that is dead minutes later - posting it to a channel would be a broken link\n// by the time anybody tapped it. `youtubeUrl` is where the video actually\n// lives, and it is what Telegram unfurls into a play card.\n//\n// It is optional: a run that omits it publishes to Facebook and skips the\n// Telegram branch, so every existing caller keeps working unchanged.\nconst youtubeUrl = pick('youtubeUrl', 4);\nif (youtubeUrl && !/^https:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\//.test(youtubeUrl)) {\n  throw new Error(`youtubeUrl must be a YouTube URL if given, got: ${youtubeUrl}`);\n}\n\n// The channel post wants the hook on its own - the first paragraph, without\n// the article link that `description` carries for Facebook. Telegram renders\n// the YouTube URL as its own card, so a second link above it is noise.\nconst hook = (rawDescription.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean)[0]) ?? '';\n\nconst description = trimForFacebook(rawDescription);\n\n\n// **The poster is YouTube's own, by video id.** `i.ytimg.com/vi/<id>/\n// maxresdefault.jpg` is the thumbnail we uploaded with the video, it is\n// public and permanent, and it needs no tunnel and no file handling here.\n// The site's own /images/videos/<slug>.webp would work too but Telegram is\n// happier with jpeg.\nconst ytId = (youtubeUrl.match(/(?:v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})/) || [])[1] || '';\nconst posterUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : '';\n\nreturn [{ json: { videoUrl, title, description, thumbUrl, youtubeUrl, hook, ytId, posterUrl } }];"
+        "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst title = pick('title', 1);\nconst rawDescription = pick('description', 2);\nconst thumbUrl = pick('thumbUrl', 3);\n\nif (!/^https:\\/\\//.test(videoUrl)) {\n  throw new Error(`videoUrl must be a public https URL, got: ${videoUrl || '(empty)'}`);\n}\nif (!title) throw new Error('title is empty.');\nif (thumbUrl && !/^https:\\/\\//.test(thumbUrl)) {\n  throw new Error(`thumbUrl must be a public https URL if given, got: ${thumbUrl}`);\n}\n\n// A YouTube description is written for YouTube: hook, then the article link,\n// then a second summary, chapters, and a repeat of the link. Pasting all of it\n// under a Facebook video buries the one line a reader acts on and prints the\n// same URL twice. Facebook gets the first paragraph and the link, nothing else.\n//\n// The trim happens here rather than at the caller so it cannot be forgotten:\n// the workflow is handed the full YouTube description and decides what to post.\nfunction trimForFacebook(text) {\n  if (!text) return '';\n  const paragraphs = text.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean);\n  const first = paragraphs[0] ?? '';\n\n  // Carry the link's own line verbatim rather than relabelling it. An article\n  // video says \"Full article: <url>\"; a sound session says \"More at <url>\" and\n  // has no article behind it, so printing \"Full article\" there would be a lie.\n  // Prefer the labelled form because these descriptions repeat the same URL at\n  // the bottom under different wording, and the first one is canonical.\n  const lines = text.split('\\n').map((l) => l.trim());\n  const linkLine =\n    lines.find((l) => /^Full article:\\s*https?:\\/\\/\\S+/.test(l)) ??\n    lines.find((l) => /https?:\\/\\/\\S+/.test(l));\n\n  if (!linkLine || first.includes(linkLine)) return first;\n  return `${first}\\n\\n${linkLine}`;\n}\n\n// **The Telegram share takes the YouTube URL, not the tunnel URL.** `videoUrl`\n// above is an ephemeral trycloudflare address that Facebook reads once and\n// that is dead minutes later - posting it to a channel would be a broken link\n// by the time anybody tapped it. `youtubeUrl` is where the video actually\n// lives, and it is what Telegram unfurls into a play card.\n//\n// It is optional: a run that omits it publishes to Facebook and skips the\n// Telegram branch, so every existing caller keeps working unchanged.\nconst youtubeUrl = pick('youtubeUrl', 4);\nif (youtubeUrl && !/^https:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\//.test(youtubeUrl)) {\n  throw new Error(`youtubeUrl must be a YouTube URL if given, got: ${youtubeUrl}`);\n}\n\n// The channel post wants the hook on its own - the first paragraph, without\n// the article link that `description` carries for Facebook. Telegram renders\n// the YouTube URL as its own card, so a second link above it is noise.\nconst hook = (rawDescription.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean)[0]) ?? '';\n\nconst description = trimForFacebook(rawDescription);\n\n\n// **The poster is YouTube's own, by video id.** `i.ytimg.com/vi/<id>/\n// maxresdefault.jpg` is the thumbnail we uploaded with the video, it is\n// public and permanent, and it needs no tunnel and no file handling here.\n// The site's own /images/videos/<slug>.webp would work too but Telegram is\n// happier with jpeg.\nconst ytId = (youtubeUrl.match(/(?:v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})/) || [])[1] || '';\nconst posterUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : '';\n\n\n// **The cover is fetched by n8n and uploaded as bytes, never handed to\n// Facebook as a URL.** `thumb_url` on `/me/videos` is not a parameter the\n// Graph API accepts - it is accepted silently and ignored, which is why every\n// long form published before 2026-10-02 went up with an auto-picked frame.\n// The access log of the publish tunnel is what proved it: the video was\n// fetched, the thumbnail never was, and neither the API response (`{id}`\n// alone) nor the execution status says a word about it.\n//\n// Same two constraints as the Reel's cover, for the same reasons: this\n// machine's resolver does not resolve *.trycloudflare.com at all, so a fetch\n// of the public tunnel URL from here fails outright. Read the bytes off the\n// local http.server the tunnel fronts instead. 8765 is the port\n// docs/publish/instagram-facebook.md tells every run to use.\nconst LOCAL_ORIGIN = 'http://127.0.0.1:8765';\nconst localise = (u) => {\n  try {\n    const parsed = new URL(u);\n    return /\\.trycloudflare\\.com$/.test(parsed.hostname) ? LOCAL_ORIGIN + parsed.pathname : u;\n  } catch (e) {\n    return u;\n  }\n};\n\n// Prefer the thumbnail the run serves; fall back to YouTube's own copy, which\n// is public and permanent and needs no tunnel. The fallback is what makes a\n// cover recoverable for a video published without one.\nconst coverFetchUrl = localise(thumbUrl) || posterUrl;\n\nreturn [{ json: { videoUrl, title, description, thumbUrl, youtubeUrl, hook, ytId, posterUrl, coverFetchUrl } }];"
       },
       "name": "Normalise Input",
       "type": "n8n-nodes-base.code",
@@ -106,13 +106,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// `$('Publish Video')` rather than `$json`: the Telegram branch now sits\n// between Publish Video and here, so `$json` is whichever node last ran.\nlet telegramMessageId = null;\ntry {\n  telegramMessageId = $('Telegram Post').item.json?.result?.message_id\n    ?? $('Telegram Post').item.json?.message_id ?? null;\n} catch (e) {\n  // The Telegram branch did not run - no youtubeUrl was passed. Not an error.\n}\n\nreturn [{ json: {\n  facebookVideoId: $('Publish Video').item.json.id,\n  title: $('Normalise Input').item.json.title,\n  youtubeUrl: $('Normalise Input').item.json.youtubeUrl || null,\n  telegramSent: telegramMessageId !== null,\n  telegramMessageId,\n} }];"
+        "jsCode": "// `$('Publish Video')` rather than `$json`: the Telegram branch now sits\n// between Publish Video and here, so `$json` is whichever node last ran.\nlet telegramMessageId = null;\ntry {\n  telegramMessageId = $('Telegram Post').item.json?.result?.message_id\n    ?? $('Telegram Post').item.json?.message_id ?? null;\n} catch (e) {\n  // The Telegram branch did not run - no youtubeUrl was passed. Not an error.\n}\n\n\n// Cosmetic and deliberately non-fatal: both cover nodes are\n// continueRegularOutput, because they run *after* the video is already live\n// on the Page and must never fail a published run into a red execution that\n// invites a re-run - and a re-run re-uploads the whole video.\nlet facebookCoverSet = false;\ntry {\n  const c = $('FB Set Video Cover').item.json;\n  facebookCoverSet = c?.id != null || c?.success === true;\n} catch (e) {\n  // The cover nodes did not run, or errored out. Not fatal.\n}\n\nreturn [{ json: {\n  facebookVideoId: $('Publish Video').item.json.id,\n  title: $('Normalise Input').item.json.title,\n  youtubeUrl: $('Normalise Input').item.json.youtubeUrl || null,\n  telegramSent: telegramMessageId !== null,\n  telegramMessageId,\n  facebookCoverSet,\n} }];"
       },
       "name": "Summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        640,
+        1060,
         300
       ],
       "id": "4e3033c5-0e64-45db-b448-f16d643fe937"
@@ -145,7 +145,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        200,
+        620,
         300
       ],
       "id": "1cccd30b-bb30-41f0-bd10-9dcedca47dd9",
@@ -158,15 +158,15 @@
         "chatId": "@tinnitushelpme",
         "binaryData": false,
         "additionalFields": {
-          "caption": "=\ud83c\udfac {{ $json.title }}\n\n{{ $json.hook }}\n\n\u25b6\ufe0f Watch the full video: {{ $json.youtubeUrl }}",
+          "caption": "=🎬 {{ $('Normalise Input').item.json.title }}\n\n{{ $('Normalise Input').item.json.hook }}\n\n▶️ Watch the full video: {{ $('Normalise Input').item.json.youtubeUrl }}",
           "appendAttribution": false
         },
-        "file": "={{ $json.posterUrl }}"
+        "file": "={{ $('Normalise Input').item.json.posterUrl }}"
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        420,
+        840,
         200
       ],
       "id": "5aef6e3e-2650-40c7-b0fd-cba70c382a5f",
@@ -179,6 +179,72 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Normalise Input').item.json.coverFetchUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "cover"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        300
+      ],
+      "name": "FB Fetch Cover",
+      "onError": "continueRegularOutput",
+      "id": "0367d5af-9ab4-4b97-8f7e-f97a40e2ede5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v23.0/{{ $('Publish Video').item.json.id }}/thumbnails",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "is_preferred",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "source",
+              "inputDataFieldName": "cover"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        410,
+        300
+      ],
+      "name": "FB Set Video Cover",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "c314029a-60b9-47e3-b900-5929767fd3a7"
     }
   ],
   "connections": {
@@ -208,7 +274,7 @@
       "main": [
         [
           {
-            "node": "Share To Telegram?",
+            "node": "FB Fetch Cover",
             "type": "main",
             "index": 0
           }
@@ -243,6 +309,28 @@
           }
         ]
       ]
+    },
+    "FB Fetch Cover": {
+      "main": [
+        [
+          {
+            "node": "FB Set Video Cover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Set Video Cover": {
+      "main": [
+        [
+          {
+            "node": "Share To Telegram?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -251,19 +339,16 @@
   "staticData": null,
   "nodeGroups": [],
   "pinData": null,
-  "activeVersionId": "dda2433c-8c49-49b5-9a5a-6de381296178",
-  "versionCounter": 8,
+  "activeVersionId": "f5688cd6-e31c-4d9e-a3e8-a8a2293d3022",
+  "versionCounter": 9,
   "sourceWorkflowId": null,
   "activeVersion": {
-    "updatedAt": "2026-08-23T22:04:21.288Z",
-    "createdAt": "2026-08-23T22:04:21.288Z",
-    "versionId": "dda2433c-8c49-49b5-9a5a-6de381296178",
     "workflowId": "Lyhn5U7pYhrAs9x7",
     "nodes": [
       {
         "parameters": {
           "formTitle": "Tinnitus Help: Publish Facebook Video",
-          "formDescription": "Native long-form video upload to the Page feed (not a Reel \u2014 no duration limit). videoUrl and thumbUrl must be publicly reachable for the length of the run.",
+          "formDescription": "Native long-form video upload to the Page feed (not a Reel — no duration limit). videoUrl and thumbUrl must be publicly reachable for the length of the run.",
           "formFields": {
             "values": [
               {
@@ -304,7 +389,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst title = pick('title', 1);\nconst rawDescription = pick('description', 2);\nconst thumbUrl = pick('thumbUrl', 3);\n\nif (!/^https:\\/\\//.test(videoUrl)) {\n  throw new Error(`videoUrl must be a public https URL, got: ${videoUrl || '(empty)'}`);\n}\nif (!title) throw new Error('title is empty.');\nif (thumbUrl && !/^https:\\/\\//.test(thumbUrl)) {\n  throw new Error(`thumbUrl must be a public https URL if given, got: ${thumbUrl}`);\n}\n\n// A YouTube description is written for YouTube: hook, then the article link,\n// then a second summary, chapters, and a repeat of the link. Pasting all of it\n// under a Facebook video buries the one line a reader acts on and prints the\n// same URL twice. Facebook gets the first paragraph and the link, nothing else.\n//\n// The trim happens here rather than at the caller so it cannot be forgotten:\n// the workflow is handed the full YouTube description and decides what to post.\nfunction trimForFacebook(text) {\n  if (!text) return '';\n  const paragraphs = text.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean);\n  const first = paragraphs[0] ?? '';\n\n  // Carry the link's own line verbatim rather than relabelling it. An article\n  // video says \"Full article: <url>\"; a sound session says \"More at <url>\" and\n  // has no article behind it, so printing \"Full article\" there would be a lie.\n  // Prefer the labelled form because these descriptions repeat the same URL at\n  // the bottom under different wording, and the first one is canonical.\n  const lines = text.split('\\n').map((l) => l.trim());\n  const linkLine =\n    lines.find((l) => /^Full article:\\s*https?:\\/\\/\\S+/.test(l)) ??\n    lines.find((l) => /https?:\\/\\/\\S+/.test(l));\n\n  if (!linkLine || first.includes(linkLine)) return first;\n  return `${first}\\n\\n${linkLine}`;\n}\n\n// **The Telegram share takes the YouTube URL, not the tunnel URL.** `videoUrl`\n// above is an ephemeral trycloudflare address that Facebook reads once and\n// that is dead minutes later - posting it to a channel would be a broken link\n// by the time anybody tapped it. `youtubeUrl` is where the video actually\n// lives, and it is what Telegram unfurls into a play card.\n//\n// It is optional: a run that omits it publishes to Facebook and skips the\n// Telegram branch, so every existing caller keeps working unchanged.\nconst youtubeUrl = pick('youtubeUrl', 4);\nif (youtubeUrl && !/^https:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\//.test(youtubeUrl)) {\n  throw new Error(`youtubeUrl must be a YouTube URL if given, got: ${youtubeUrl}`);\n}\n\n// The channel post wants the hook on its own - the first paragraph, without\n// the article link that `description` carries for Facebook. Telegram renders\n// the YouTube URL as its own card, so a second link above it is noise.\nconst hook = (rawDescription.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean)[0]) ?? '';\n\nconst description = trimForFacebook(rawDescription);\n\n\n// **The poster is YouTube's own, by video id.** `i.ytimg.com/vi/<id>/\n// maxresdefault.jpg` is the thumbnail we uploaded with the video, it is\n// public and permanent, and it needs no tunnel and no file handling here.\n// The site's own /images/videos/<slug>.webp would work too but Telegram is\n// happier with jpeg.\nconst ytId = (youtubeUrl.match(/(?:v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})/) || [])[1] || '';\nconst posterUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : '';\n\nreturn [{ json: { videoUrl, title, description, thumbUrl, youtubeUrl, hook, ytId, posterUrl } }];"
+          "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst title = pick('title', 1);\nconst rawDescription = pick('description', 2);\nconst thumbUrl = pick('thumbUrl', 3);\n\nif (!/^https:\\/\\//.test(videoUrl)) {\n  throw new Error(`videoUrl must be a public https URL, got: ${videoUrl || '(empty)'}`);\n}\nif (!title) throw new Error('title is empty.');\nif (thumbUrl && !/^https:\\/\\//.test(thumbUrl)) {\n  throw new Error(`thumbUrl must be a public https URL if given, got: ${thumbUrl}`);\n}\n\n// A YouTube description is written for YouTube: hook, then the article link,\n// then a second summary, chapters, and a repeat of the link. Pasting all of it\n// under a Facebook video buries the one line a reader acts on and prints the\n// same URL twice. Facebook gets the first paragraph and the link, nothing else.\n//\n// The trim happens here rather than at the caller so it cannot be forgotten:\n// the workflow is handed the full YouTube description and decides what to post.\nfunction trimForFacebook(text) {\n  if (!text) return '';\n  const paragraphs = text.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean);\n  const first = paragraphs[0] ?? '';\n\n  // Carry the link's own line verbatim rather than relabelling it. An article\n  // video says \"Full article: <url>\"; a sound session says \"More at <url>\" and\n  // has no article behind it, so printing \"Full article\" there would be a lie.\n  // Prefer the labelled form because these descriptions repeat the same URL at\n  // the bottom under different wording, and the first one is canonical.\n  const lines = text.split('\\n').map((l) => l.trim());\n  const linkLine =\n    lines.find((l) => /^Full article:\\s*https?:\\/\\/\\S+/.test(l)) ??\n    lines.find((l) => /https?:\\/\\/\\S+/.test(l));\n\n  if (!linkLine || first.includes(linkLine)) return first;\n  return `${first}\\n\\n${linkLine}`;\n}\n\n// **The Telegram share takes the YouTube URL, not the tunnel URL.** `videoUrl`\n// above is an ephemeral trycloudflare address that Facebook reads once and\n// that is dead minutes later - posting it to a channel would be a broken link\n// by the time anybody tapped it. `youtubeUrl` is where the video actually\n// lives, and it is what Telegram unfurls into a play card.\n//\n// It is optional: a run that omits it publishes to Facebook and skips the\n// Telegram branch, so every existing caller keeps working unchanged.\nconst youtubeUrl = pick('youtubeUrl', 4);\nif (youtubeUrl && !/^https:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\//.test(youtubeUrl)) {\n  throw new Error(`youtubeUrl must be a YouTube URL if given, got: ${youtubeUrl}`);\n}\n\n// The channel post wants the hook on its own - the first paragraph, without\n// the article link that `description` carries for Facebook. Telegram renders\n// the YouTube URL as its own card, so a second link above it is noise.\nconst hook = (rawDescription.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean)[0]) ?? '';\n\nconst description = trimForFacebook(rawDescription);\n\n\n// **The poster is YouTube's own, by video id.** `i.ytimg.com/vi/<id>/\n// maxresdefault.jpg` is the thumbnail we uploaded with the video, it is\n// public and permanent, and it needs no tunnel and no file handling here.\n// The site's own /images/videos/<slug>.webp would work too but Telegram is\n// happier with jpeg.\nconst ytId = (youtubeUrl.match(/(?:v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})/) || [])[1] || '';\nconst posterUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : '';\n\n\n// **The cover is fetched by n8n and uploaded as bytes, never handed to\n// Facebook as a URL.** `thumb_url` on `/me/videos` is not a parameter the\n// Graph API accepts - it is accepted silently and ignored, which is why every\n// long form published before 2026-10-02 went up with an auto-picked frame.\n// The access log of the publish tunnel is what proved it: the video was\n// fetched, the thumbnail never was, and neither the API response (`{id}`\n// alone) nor the execution status says a word about it.\n//\n// Same two constraints as the Reel's cover, for the same reasons: this\n// machine's resolver does not resolve *.trycloudflare.com at all, so a fetch\n// of the public tunnel URL from here fails outright. Read the bytes off the\n// local http.server the tunnel fronts instead. 8765 is the port\n// docs/publish/instagram-facebook.md tells every run to use.\nconst LOCAL_ORIGIN = 'http://127.0.0.1:8765';\nconst localise = (u) => {\n  try {\n    const parsed = new URL(u);\n    return /\\.trycloudflare\\.com$/.test(parsed.hostname) ? LOCAL_ORIGIN + parsed.pathname : u;\n  } catch (e) {\n    return u;\n  }\n};\n\n// Prefer the thumbnail the run serves; fall back to YouTube's own copy, which\n// is public and permanent and needs no tunnel. The fallback is what makes a\n// cover recoverable for a video published without one.\nconst coverFetchUrl = localise(thumbUrl) || posterUrl;\n\nreturn [{ json: { videoUrl, title, description, thumbUrl, youtubeUrl, hook, ytId, posterUrl, coverFetchUrl } }];"
         },
         "name": "Normalise Input",
         "type": "n8n-nodes-base.code",
@@ -361,13 +446,13 @@
       },
       {
         "parameters": {
-          "jsCode": "// `$('Publish Video')` rather than `$json`: the Telegram branch now sits\n// between Publish Video and here, so `$json` is whichever node last ran.\nlet telegramMessageId = null;\ntry {\n  telegramMessageId = $('Telegram Post').item.json?.result?.message_id\n    ?? $('Telegram Post').item.json?.message_id ?? null;\n} catch (e) {\n  // The Telegram branch did not run - no youtubeUrl was passed. Not an error.\n}\n\nreturn [{ json: {\n  facebookVideoId: $('Publish Video').item.json.id,\n  title: $('Normalise Input').item.json.title,\n  youtubeUrl: $('Normalise Input').item.json.youtubeUrl || null,\n  telegramSent: telegramMessageId !== null,\n  telegramMessageId,\n} }];"
+          "jsCode": "// `$('Publish Video')` rather than `$json`: the Telegram branch now sits\n// between Publish Video and here, so `$json` is whichever node last ran.\nlet telegramMessageId = null;\ntry {\n  telegramMessageId = $('Telegram Post').item.json?.result?.message_id\n    ?? $('Telegram Post').item.json?.message_id ?? null;\n} catch (e) {\n  // The Telegram branch did not run - no youtubeUrl was passed. Not an error.\n}\n\n\n// Cosmetic and deliberately non-fatal: both cover nodes are\n// continueRegularOutput, because they run *after* the video is already live\n// on the Page and must never fail a published run into a red execution that\n// invites a re-run - and a re-run re-uploads the whole video.\nlet facebookCoverSet = false;\ntry {\n  const c = $('FB Set Video Cover').item.json;\n  facebookCoverSet = c?.id != null || c?.success === true;\n} catch (e) {\n  // The cover nodes did not run, or errored out. Not fatal.\n}\n\nreturn [{ json: {\n  facebookVideoId: $('Publish Video').item.json.id,\n  title: $('Normalise Input').item.json.title,\n  youtubeUrl: $('Normalise Input').item.json.youtubeUrl || null,\n  telegramSent: telegramMessageId !== null,\n  telegramMessageId,\n  facebookCoverSet,\n} }];"
         },
         "name": "Summary",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          640,
+          1060,
           300
         ],
         "id": "4e3033c5-0e64-45db-b448-f16d643fe937"
@@ -400,7 +485,7 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
         "position": [
-          200,
+          620,
           300
         ],
         "id": "1cccd30b-bb30-41f0-bd10-9dcedca47dd9",
@@ -413,15 +498,15 @@
           "chatId": "@tinnitushelpme",
           "binaryData": false,
           "additionalFields": {
-            "caption": "=\ud83c\udfac {{ $json.title }}\n\n{{ $json.hook }}\n\n\u25b6\ufe0f Watch the full video: {{ $json.youtubeUrl }}",
+            "caption": "=🎬 {{ $('Normalise Input').item.json.title }}\n\n{{ $('Normalise Input').item.json.hook }}\n\n▶️ Watch the full video: {{ $('Normalise Input').item.json.youtubeUrl }}",
             "appendAttribution": false
           },
-          "file": "={{ $json.posterUrl }}"
+          "file": "={{ $('Normalise Input').item.json.posterUrl }}"
         },
         "type": "n8n-nodes-base.telegram",
         "typeVersion": 1.2,
         "position": [
-          420,
+          840,
           200
         ],
         "id": "5aef6e3e-2650-40c7-b0fd-cba70c382a5f",
@@ -434,6 +519,72 @@
           }
         },
         "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "url": "={{ $('Normalise Input').item.json.coverFetchUrl }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file",
+                "outputPropertyName": "cover"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          200,
+          300
+        ],
+        "name": "FB Fetch Cover",
+        "onError": "continueRegularOutput",
+        "id": "0367d5af-9ab4-4b97-8f7e-f97a40e2ede5"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://graph.facebook.com/v23.0/{{ $('Publish Video').item.json.id }}/thumbnails",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "facebookGraphApi",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "is_preferred",
+                "value": "true"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "source",
+                "inputDataFieldName": "cover"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          410,
+          300
+        ],
+        "name": "FB Set Video Cover",
+        "onError": "continueRegularOutput",
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "ltfxXBWtUWu9wRg3",
+            "name": "Facebook Graph (TinnitusHelp)"
+          }
+        },
+        "id": "c314029a-60b9-47e3-b900-5929767fd3a7"
       }
     ],
     "connections": {
@@ -463,7 +614,7 @@
         "main": [
           [
             {
-              "node": "Share To Telegram?",
+              "node": "FB Fetch Cover",
               "type": "main",
               "index": 0
             }
@@ -498,6 +649,28 @@
             }
           ]
         ]
+      },
+      "FB Fetch Cover": {
+        "main": [
+          [
+            {
+              "node": "FB Set Video Cover",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FB Set Video Cover": {
+        "main": [
+          [
+            {
+              "node": "Share To Telegram?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
@@ -507,18 +680,14 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-08-23T22:04:21.306Z",
-        "id": 245,
+        "id": 286,
         "workflowId": "Lyhn5U7pYhrAs9x7",
-        "versionId": "dda2433c-8c49-49b5-9a5a-6de381296178",
         "event": "activated",
         "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
       },
       {
-        "createdAt": "2026-08-23T22:04:21.303Z",
-        "id": 244,
+        "id": 285,
         "workflowId": "Lyhn5U7pYhrAs9x7",
-        "versionId": "dda2433c-8c49-49b5-9a5a-6de381296178",
         "event": "deactivated",
         "userId": "4346e89d-8f9e-4244-87be-62981ab23688"
       }

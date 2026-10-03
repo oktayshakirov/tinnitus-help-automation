@@ -69,7 +69,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Sound\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/zen/${slug}`\n}}];"
+        "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^[\"']|[\"']$/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Sound\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/zen/${slug}`\n}}];"
       },
       "id": "445680b0-7faf-4ec3-a2c6-e66a884e7631",
       "name": "Parse Frontmatter",

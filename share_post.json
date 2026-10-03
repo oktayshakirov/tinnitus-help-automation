@@ -88,7 +88,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)\\n---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    if (/^\\s/.test(line) || line.trim().startsWith('-')) return;\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
+        "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)\\n---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    if (/^\\s/.test(line) || line.trim().startsWith('-')) return;\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^[\"']|[\"']$/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
       },
       "id": "7ecce0d3-de7b-460f-80fe-9730247e5f2f",
       "name": "Parse Frontmatter",
@@ -686,7 +686,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)\\n---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    if (/^\\s/.test(line) || line.trim().startsWith('-')) return;\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^\\\"|\\\"$|'/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
+          "jsCode": "const raw = $json.content;\nconst decoded = Buffer.from(raw, 'base64').toString('utf8');\nconst match = /---([\\s\\S]*?)\\n---/.exec(decoded);\nconst fm = {};\nif (match && match[1]) {\n  match[1].split('\\n').forEach(line => {\n    if (/^\\s/.test(line) || line.trim().startsWith('-')) return;\n    const [key, ...rest] = line.split(':');\n    if (key && rest.length > 0) {\n      fm[key.trim()] = rest.join(':').trim().replace(/^[\"']|[\"']$/g, '');\n    }\n  });\n}\nconst slug = $('Set Slug').item.json.slug;\nreturn [{ json: {\n  name: fm.title || \"Post\",\n  image: fm.image ? `https://tinnitushelp.me${fm.image}` : \"\",\n  description: fm.description || \"\",\n  link: `http://tinnitushelp.me/blog/${slug}`\n}}];"
         },
         "id": "7ecce0d3-de7b-460f-80fe-9730247e5f2f",
         "name": "Parse Frontmatter",

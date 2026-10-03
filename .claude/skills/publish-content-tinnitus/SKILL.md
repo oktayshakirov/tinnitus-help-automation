@@ -1,11 +1,13 @@
 ---
 name: publish-content-tinnitus
-description: Publish content to tinnitushelp.me via the local n8n workflows - suggest topics, generate the article, quality-gate it, stage locally for review, then push (deploy-gated) and share to social media. Use when the user wants to create/publish/share a Tinnitus Help post. For thecrypto.wiki use publish-content-crypto instead.
+description: Publish content to tinnitushelp.me - suggest topics, write the article (Claude writes it directly; n8n generation is fallback only), quality-gate it, stage locally for review, then push (deploy-gated) and share to social media. Use when the user wants to create/publish/share a Tinnitus Help post. For thecrypto.wiki use publish-content-crypto instead.
 ---
 
 # Publish Content — Tinnitus Help
 
-Full agent loop: **suggest topics → user picks → generate via n8n → quality gate → stage locally → fetch main-image candidates (user picks) → user reviews → push (deploy gate) → share → verify.**
+Full agent loop: **suggest topics → user picks → Claude writes the article → quality gate → stage locally → fetch main-image candidates (user picks) → user reviews → push (deploy gate) → share → verify.**
+
+**Claude writes the articles; n8n posts them.** The New Post generation workflow is kept as a fallback but is not the path - see Step 2.
 
 This skill covers **tinnitushelp.me only**. For thecrypto.wiki, use `publish-content-crypto` in `crypto-wiki-automation` — it is a separate copy, not a shared script, so a fix here does not apply there automatically.
 
@@ -22,7 +24,7 @@ This skill covers **tinnitushelp.me only**. For thecrypto.wiki, use `publish-con
 **Where this skill lives / cross-device:** the real files are versioned in the `tinnitus-help-automation` repo at `.claude/skills/publish-content-tinnitus/`; `~/.claude/skills/publish-content-tinnitus` is a **symlink** into it, which is how Claude Code discovers the skill. So edits to `SKILL.md` or `scripts/` are committed like any repo change (backup workflow JSON to the crypto repo's `.n8n-backups/` still applies for workflow edits, since that's where n8n API access and backups live - see Prerequisites). **To set up a new device:** clone `tinnitus-help-automation` AND `crypto-wiki-automation` (the second one holds the shared n8n secrets), then `ln -s <tinnitus-help-automation>/.claude/skills/publish-content-tinnitus ~/.claude/skills/publish-content-tinnitus`, and recreate the two gitignored secrets locally in `crypto-wiki-automation` (`.n8n-api-key`, `.pexels-api-key`).
 
 ## Prerequisites
-- **n8n must be running** at `http://localhost:5678` (user starts it manually with `n8n`; it is NOT always on). If unreachable, ask the user to start it.
+- **n8n must be running** at `http://localhost:5678` (user starts it manually with `n8n`; it is NOT always on). If unreachable, ask the user to start it. Since the Step 2 migration this is needed for **Step 6 (Share)** and the video workflows, not for writing - an article can be written and gated with n8n down.
 - Prefer the `mcp__n8n-local__*` MCP tools. If they're not loaded in this session, call the MCP endpoint directly with curl: POST `http://127.0.0.1:5678/mcp-server/http` (JSON-RPC `tools/call`), auth `Authorization: Bearer <token>` - read the token from the `n8n-local` server entry in `~/.claude.json`. Poll executions via REST: `http://127.0.0.1:5678/api/v1/executions/<id>?includeData=true` with header `X-N8N-API-KEY` from the gitignored `/Users/oktayshakirov/Coding/crypto-wiki-automation/.n8n-api-key` (shared n8n instance - the key isn't per-site).
 - **Triggering a Form Trigger without the MCP tools** (reading the MCP bearer token out of `~/.claude.json` may be blocked by the permission classifier): fetch the workflow over REST, read the form trigger's `webhookId`, and POST to `http://127.0.0.1:5678/form/<webhookId>`. Two non-obvious requirements, both of which fail *quietly*:
   - It must be **`multipart/form-data`** (`curl -F`, not `--data-urlencode`). Form-encoded returns HTTP 500 `Workflow could not be started!`, and the real reason (`Expected multipart/form-data`) only shows up in the execution record.
@@ -35,7 +37,7 @@ This skill covers **tinnitushelp.me only**. For thecrypto.wiki, use `publish-con
 ## Workflow registry (Form Triggers; run with `inputs: {type:"form", formData:{...}}`)
 | Action | Workflow ID | formData |
 |---|---|---|
-| New Post | `pddxBAmv2k2nSBv2` | `{ topic }` |
+| New Post (fallback) | `pddxBAmv2k2nSBv2` | `{ topic }` |
 | Share Post | `jtUStrxCt23FGNDk` | `{ slug }` |
 | Share Sound | `UcubZDb1sKnszcZX` | `{ slug }` |
 | Publish Reel | `1GTSF6izfwA1gpig` | `{ videoUrl, coverUrl, caption, durationSeconds }` |
@@ -89,10 +91,74 @@ credential (`Authorization` = `OAuth <page token>`) on that one node is the fix.
 ## Step 1 - Suggest 10 topics
 Read `content-database.json` in `tinnitus-help-automation` (`blog`/`zen`). Gap-analyze vs existing titles; use WebSearch for trends. Present 10 options with a one-line "why" each. **The chosen topic becomes title AND slug verbatim - keep it short.**
 
-## Step 2 - Generate
-Execute the New Post workflow. GPT-5 takes 1-3 min (retryOnFail 3x is set); if the run still fails with ECONNRESET/ETIMEDOUT, just re-run. On success it commits the MDX + updates `content-database.json` in the automation repo.
+## Step 2 - Write the article (Claude writes it; n8n is fallback only)
 
-## Step 3 - Quality gate (pull the automation repo, check the MDX)
+**Claude writes the article directly. Do NOT trigger the New Post workflow** - it still
+exists and still works, but it is a fallback, not the path. Migrated 2026-10-03,
+following the same change in `publish-content-crypto`; the evidence is in that skill's
+CHANGELOG.
+
+Why the change, and why it matters more here than on the crypto site: the generation node
+runs `gpt-5-2025-08-07`, whose training predates much of what these pages must be current
+about, and it writes confident, well-formed prose around stale or unsourced claims. On the
+crypto side a measured diff showed a figure off by 26x that the quality gate passed
+cleanly. **On a medical YMYL site the same failure mode is worse than a wrong number.**
+Step 3b already documents where it led: every post generated in 2026 shipped without any
+of the three E-E-A-T blocks, and `serotonin-and-tinnitus` discussed SSRI start-up spikes,
+tapering and dose titration while saying "some studies suggest" four times and citing
+nothing.
+
+That is the core reason this step moved. **`sources:` cannot be generated, only
+researched** - the model has no way to confirm a URL resolves, that the publisher is who
+it claims, or that the page says what the post claims it says. Claude can fetch each one.
+
+**The cost of this change, stated plainly:** the two-model check is gone. GPT-5 wrote and
+Claude audited, so their blind spots did not line up; now Claude does both. The sourcing
+discipline below replaces that independence - treat it as mandatory, not advisory.
+
+### Sourcing discipline (non-negotiable on a health site)
+
+- **Never state a clinical claim you have not just read a source for.** Not "some studies
+  suggest" - either cite the study or drop the sentence.
+- **Fetch every source URL before it goes in `sources:`** (`curl -sL -o /dev/null -w
+  '%{http_code}'`, then actually read the page). Confirm it resolves, that the publisher
+  matches, and that it supports the specific claim. A plausible-looking NIH URL that 404s
+  or covers a different condition is worse than no citation.
+- **Stay inside the established domain set** in Step 3b. The gate warns outside it; widen
+  deliberately, never by reflex.
+- **Search for what changed since.** Guidelines get revised. Check for updates after the
+  date of any comparable existing post rather than re-reading what is already there.
+- **Omit rather than estimate.** Prevalence figures, success rates and dosages are the
+  highest-risk sentences on the site. No number is better than a confident wrong one.
+- **Look at the images before writing alt text.** `Read` each body image; alt text written
+  against an imagined picture is a documented failure mode.
+
+### Procedure
+
+1. Read `post_guidelines.md` in the automation repo as the brief - structure, tone,
+   categories, body-image list. Some lines exist to patch GPT-5 habits; follow the
+   substance, not the scolding.
+2. Read `content-database.json` for valid link targets, and confirm each target against
+   the MDX actually on disk - the DB has drifted and is missing at least two live posts.
+3. Research the topic, including the three Step 3b blocks. **Write `sources:`, `faq:` and
+   `medical:` as part of writing the post, not as a cleanup pass** - this is the step the
+   workflow never did at all, and the single biggest quality gain from the migration.
+4. Write the MDX **directly into the site repo** (`tinnitus-blog/content/posts/<slug>.mdx`).
+   This replaces the old two-hop route where n8n committed to the automation repo and
+   Step 4 copied it across. Nothing is committed yet.
+5. **Register it in `content-database.json`** in the automation repo - the job the
+   `Update Database` node used to do, and the easiest to forget (it was missed on the
+   first migrated crypto post). The shape here differs from the crypto skill:
+   - collection is **`blog`**, not `posts`
+   - key is the **slug as-is** (`migraine-and-tinnitus`), *not* dot-separated the way
+     crypto keys are
+   - value = `{ "slug": "<slug>", "title": "<display title>" }`
+   - increment **`next_orders.blog`** by 1
+   - match the file's existing trailing-newline style so future diffs stay clean
+6. Go to Step 3 and gate it, then Step 3b. The gate is unchanged and now carries more
+   weight, since it is the only automated check left.
+
+## Step 3 - Quality gate (check the MDX you just wrote)
 **Run the automated gate first:** `python3 scripts/quality_gate.py <path-to.mdx>` (script dir is this skill's folder). It checks all of the below deterministically and exits non-zero on any hard FAIL - fix those, re-run, then eyeball anything a script can't judge (image relevance, factual/date accuracy, link *aptness*).
 
 It resolves the DB + image archive itself. Override with `--db` / `--archive`.
@@ -101,7 +167,7 @@ Known non-issues it deliberately tolerates: markdown table separator rows (`| --
 
 Checks: 1,200-2,500 words; 8-15 internal links, **bold** `**[Text](/path)**`, each page linked at most once, all slugs valid vs DB; exactly 2 `<Image />` and the **first one is the main image**; body images **not repeated in posts published close together** - reusing an archive image across the site is fine and expected; what matters is that someone reading a few recent posts back to back never sees the same picture twice. The gate warns when a body image also appears in any of the 5 most recent other posts by frontmatter date (`--recent-window`); the Build node keeps reaching for the same few files, and `audiologist.jpg` ended up as the body image on three consecutive posts. On a warning, swap in a different archive file, or fetch a new one with `pick_main_image.py` and add it under a generic reusable name (e.g. `sound-therapy-headphones.jpg`, `patient-consultation.jpg`) rather than a slug-specific one - old images are free to come back around later; exactly 2-3 lowercase tags from the fixed vocab; description 120-135 chars (hard max 140, the site truncates); **`sources:` (3-5, authoritative) and `faq:` (4-5) present** - see Step 3b, this is the part that most affects post quality; no em/en dashes or `--` (plain `-` only); **no curly quotes** (`'`/`'`/`"`/`"` -> straight; applies to body AND the frontmatter description); no trailing metadata JSON (fenced or bare); ads never adjacent to images; no `## References` heading in the body (the `sources:` block replaces it).
 
-Most violations are auto-fixed by the Build node now - if one slips through, fix the article AND add a deterministic fix to the workflow node + `post_guidelines.md` (backup to the crypto repo's `.n8n-backups/` first; mutate the workflow dict in place; PUT only `name,nodes,connections,settings`).
+The Build node's auto-fixes (curly quotes, dashes) no longer run, because Claude writes the MDX directly - **get these right while writing** rather than expecting a cleanup pass. If a violation recurs across articles, fix `post_guidelines.md`, not a workflow node. The notes below about workflow-node fixes apply only if you fall back to n8n generation.
 **Persisting workflow fixes:** live n8n edits only survive in the gitignored `.n8n-backups/`. When a fix is **important/major** (fixes a broken workflow, changes a contract, or prevents a defect on every future run), also sync the live workflow into this repo's committed JSON snapshot (`new_post.json`, `share_post.json`, `share_sound.json`, ...) and commit, so it survives an n8n reset - minor tweaks can stay live-only. Known deterministic fixes already committed: `slugToTitle` Title-Cases spaced-lowercase topics and splits on spaces-or-hyphens (was returning lowercase titles verbatim); the Build node moves a headless intro (prose between the main `<Image>` and the first `## <Highlighter>`) down under that heading, so every post opens with a headline.
 
 **Answer-first opening.** The first paragraph under the first heading must *directly answer the question the title implies*, in roughly the first 40-60 words, before any throat-clearing. "Does X cause tinnitus?" opens with "Yes/No/Sometimes, because..."; a "best X" or "X vs Y" topic opens by naming the top pick(s) and who each suits. This is the sentence Google lifts into a featured snippet and ChatGPT/Gemini quote in an answer - burying it costs the citation. The `<Blockquote>` above it stays a scene-setting hook; the answer goes in the body paragraph. For question and comparison posts, also add a heading that matches the exact search phrase (`## <Highlighter>What is the best tinnitus app?</Highlighter>`), and for a roundup, one sub-section per specific variant people actually search (`### Best tinnitus masking app`, `### Best white noise app for tinnitus`).
@@ -110,8 +176,10 @@ Post conventions: opens `<Blockquote>` → main `<Image>` → **first `## <Highl
 
 ## Step 3b - The three frontmatter blocks that carry E-E-A-T
 
-**This is the highest-value part of a tinnitus post and the part the workflow
-does not write on its own.** Tinnitus is YMYL (Your Money Your Life) health
+**This is the highest-value part of a tinnitus post.** Since the Step 2 migration
+Claude writes these blocks as part of writing the post, which is the main reason
+the migration happened; previously the workflow did not write them at all.
+Everything below is the spec they must meet - verify against it before gating. Tinnitus is YMYL (Your Money Your Life) health
 content: Google holds it to a higher quality bar than an ordinary blog, and the
 site was built with the machinery to meet that bar. An audit on 2026-08-25 found
 the pipeline had stopped feeding it - every post generated in 2026 carried none
@@ -191,7 +259,7 @@ topic about tinnitus in culture rather than tinnitus in a body. On those posts
 medical post it is mandatory.
 
 ## Step 4 - Stage locally + pick the main image
-Copy the MDX to `tinnitus-blog/content/posts/` - do NOT commit.
+The MDX is already in `tinnitus-blog/content/posts/` from Step 2 - do NOT commit yet. (The old copy-from-the-automation-repo hop is gone.)
 
 **Main image, auto-fetched from Pexels.**
 1. Derive a concrete visual search query from the topic (avoid brand-heavy/ad-like results). **Aim for an editorial, aesthetically strong photo, not a clinical or literal one** - the user has said explicitly they want the blog to look good rather than "medicine and ugly". Before writing the query, `Read` 2-3 recent main images from the site archive to calibrate: the house style is dramatic low-key portraits, bold coloured studio backdrops, and clean minimal shots of people - not equipment, otoscopes, or clip-art. Query words that reliably land it: `dramatic light`, `low key`, `chiaroscuro`, `side profile`, `black background`, `neon studio portrait`. A conceptual tie beats a literal one (a rim-lit side profile where the light catches the ear reads better than a doctor holding an otoscope).

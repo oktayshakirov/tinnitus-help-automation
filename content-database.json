@@ -335,6 +335,10 @@
     "migraine-and-tinnitus": {
       "slug": "migraine-and-tinnitus",
       "title": "Migraine and Tinnitus"
+    },
+    "tinnitus-in-one-ear": {
+      "slug": "tinnitus-in-one-ear",
+      "title": "Tinnitus In One Ear"
     }
   },
   "zen": {
@@ -377,7 +381,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 38,
+    "blog": 39,
     "zen": 1
   }
 }

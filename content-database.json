@@ -196,10 +196,6 @@
       "slug": "can-neck-tension-cause-tinnitus",
       "title": "Can Neck Tension Cause Tinnitus?"
     },
-    "tinnitus-burnout-when-coping-strategies-stop-working": {
-      "slug": "tinnitus-burnout-when-coping-strategies-stop-working",
-      "title": "Tinnitus Burnout: When Coping Strategies Stop Working"
-    },
     "caffeine-and-tinnitus": {
       "slug": "caffeine-and-tinnitus",
       "title": "Caffeine and Tinnitus"
@@ -339,6 +335,14 @@
     "tinnitus-in-one-ear": {
       "slug": "tinnitus-in-one-ear",
       "title": "Tinnitus In One Ear"
+    },
+    "brown-noise-vs-white-noise-for-tinnitus": {
+      "slug": "brown-noise-vs-white-noise-for-tinnitus",
+      "title": "Brown Noise vs White Noise for Tinnitus"
+    },
+    "tinnitus-trigger-tracking": {
+      "slug": "tinnitus-trigger-tracking",
+      "title": "Tinnitus Trigger Tracking"
     }
   },
   "zen": {

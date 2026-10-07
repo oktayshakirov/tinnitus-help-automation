@@ -343,6 +343,10 @@
     "tinnitus-trigger-tracking": {
       "slug": "tinnitus-trigger-tracking",
       "title": "Tinnitus Trigger Tracking"
+    },
+    "tinnitus-and-hearing-loss": {
+      "slug": "tinnitus-and-hearing-loss",
+      "title": "Tinnitus and Hearing Loss"
     }
   },
   "zen": {
@@ -385,7 +389,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 39,
+    "blog": 40,
     "zen": 1
   }
 }

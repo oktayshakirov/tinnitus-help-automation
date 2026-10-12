@@ -347,6 +347,10 @@
     "tinnitus-and-hearing-loss": {
       "slug": "tinnitus-and-hearing-loss",
       "title": "Tinnitus and Hearing Loss"
+    },
+    "musical-ear-syndrome": {
+      "slug": "musical-ear-syndrome",
+      "title": "Musical Ear Syndrome"
     }
   },
   "zen": {
@@ -389,7 +393,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 40,
+    "blog": 41,
     "zen": 1
   }
 }

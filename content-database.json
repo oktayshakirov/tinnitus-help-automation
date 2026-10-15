@@ -351,6 +351,10 @@
     "musical-ear-syndrome": {
       "slug": "musical-ear-syndrome",
       "title": "Musical Ear Syndrome"
+    },
+    "did-beethoven-have-tinnitus": {
+      "slug": "did-beethoven-have-tinnitus",
+      "title": "Did Beethoven Have Tinnitus?"
     }
   },
   "zen": {
@@ -393,7 +397,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 41,
+    "blog": 42,
     "zen": 1
   }
 }

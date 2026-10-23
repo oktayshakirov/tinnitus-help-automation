@@ -355,6 +355,10 @@
     "did-beethoven-have-tinnitus": {
       "slug": "did-beethoven-have-tinnitus",
       "title": "Did Beethoven Have Tinnitus?"
+    },
+    "menieres-disease-and-tinnitus": {
+      "slug": "menieres-disease-and-tinnitus",
+      "title": "Meniere's Disease and Tinnitus"
     }
   },
   "zen": {
@@ -397,7 +401,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 42,
+    "blog": 43,
     "zen": 1
   }
 }

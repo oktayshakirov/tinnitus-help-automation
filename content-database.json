@@ -359,6 +359,10 @@
     "menieres-disease-and-tinnitus": {
       "slug": "menieres-disease-and-tinnitus",
       "title": "Meniere's Disease and Tinnitus"
+    },
+    "how-to-manage-a-tinnitus-spike": {
+      "slug": "how-to-manage-a-tinnitus-spike",
+      "title": "How to Manage a Tinnitus Spike"
     }
   },
   "zen": {
@@ -401,7 +405,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 43,
+    "blog": 44,
     "zen": 1
   }
 }

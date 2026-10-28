@@ -17,8 +17,8 @@ tinnitushelp.me only.
 **As of 2026-08-25 this is a standalone copy, not shared with Crypto Wiki.**
 Originally one `publish-content` skill covered both sites (living in
 `crypto-wiki-automation`, branching per-site inside `quality_gate.py`), on the
-reasoning that the sequence was identical and two copies would drift. Split on
-request into `publish-content-tinnitus` here and `publish-content-crypto` in
+reasoning that the sequence was identical and two copies would drift. Split
+into `publish-content-tinnitus` here and `publish-content-crypto` in
 `crypto-wiki-automation`, to let the two diverge independently as the sites'
 needs change. **A fix made in one does not apply to the other — check both
 skills when changing a rule that might be shared** (e.g. the deploy-gate

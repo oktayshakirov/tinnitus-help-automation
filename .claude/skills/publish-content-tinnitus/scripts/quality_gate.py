@@ -17,8 +17,12 @@ script rather than one shared script branching on site.
 import argparse, json, os, re, sys
 from datetime import datetime
 
-DB = "/Users/oktayshakirov/Coding/tinnitus-help-automation/content-database.json"
-ARCHIVE = "/Users/oktayshakirov/Coding/tinnitus-blog/public/images"
+# Repo root and its siblings, found from this file so the script works from
+# any directory and any checkout (realpath follows the ~/.claude/skills symlink).
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+CODING = os.path.dirname(REPO)
+DB = os.path.join(REPO, "content-database.json")
+ARCHIVE = os.path.join(CODING, "tinnitus-blog", "public", "images")
 DOMAIN = "https://www.tinnitushelp.me"
 STATIC = {"/app", "/about", "/contact", "/faq", "/privacy", "/terms",
           "/disclaimer", "/blog", "/zen"}

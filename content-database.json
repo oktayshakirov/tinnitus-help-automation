@@ -363,6 +363,10 @@
     "how-to-manage-a-tinnitus-spike": {
       "slug": "how-to-manage-a-tinnitus-spike",
       "title": "How to Manage a Tinnitus Spike"
+    },
+    "ozempic-and-tinnitus": {
+      "slug": "ozempic-and-tinnitus",
+      "title": "Ozempic and Tinnitus"
     }
   },
   "zen": {
@@ -405,7 +409,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 44,
+    "blog": 45,
     "zen": 1
   }
 }

@@ -367,6 +367,10 @@
     "ozempic-and-tinnitus": {
       "slug": "ozempic-and-tinnitus",
       "title": "Ozempic and Tinnitus"
+    },
+    "concussion-and-tinnitus": {
+      "slug": "concussion-and-tinnitus",
+      "title": "Concussion and Tinnitus"
     }
   },
   "zen": {
@@ -409,7 +413,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 45,
+    "blog": 46,
     "zen": 1
   }
 }

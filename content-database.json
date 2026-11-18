@@ -371,6 +371,10 @@
     "concussion-and-tinnitus": {
       "slug": "concussion-and-tinnitus",
       "title": "Concussion and Tinnitus"
+    },
+    "tinnitus-guideline-2026": {
+      "slug": "tinnitus-guideline-2026",
+      "title": "Tinnitus Guideline 2026"
     }
   },
   "zen": {
@@ -413,7 +417,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 46,
+    "blog": 47,
     "zen": 1
   }
 }

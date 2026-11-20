@@ -1,0 +1,510 @@
+{
+  "id": "OJ4TIZM6CkIAXO05",
+  "name": "Tinnitus Help: Publish Facebook Video (Resumable)",
+  "active": true,
+  "nodes": [
+    {
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -200,
+        300
+      ],
+      "webhookId": "fb-video-resumable-tinnitus",
+      "parameters": {
+        "formTitle": "Tinnitus Help: Publish Facebook Video (Resumable)",
+        "formDescription": "Native long-form Page video, pushed in chunks from the local publish server (tools/range_server.py on 127.0.0.1:8765). Use this for long renders; Facebook drops the file_url fetch of big files.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "videoUrl",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "description",
+              "fieldType": "textarea",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "thumbUrl",
+              "requiredField": false
+            }
+          ]
+        },
+        "options": {},
+        "path": "fb-video-resumable-tinnitus"
+      },
+      "id": "eea73668-ae27-46c4-9105-9a5930569c92"
+    },
+    {
+      "name": "Normalise Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const j = $json;\nconst pick = (label, idx) => String(j[label] ?? j[`field-${idx}`] ?? '').trim();\n\nconst videoUrl = pick('videoUrl', 0);\nconst title = pick('title', 1);\nconst rawDescription = pick('description', 2);\nconst thumbUrl = pick('thumbUrl', 3);\n\n// **This workflow pushes the file to Facebook; Facebook never pulls it.** The\n// file_url version (Publish Facebook Video) hands Facebook a tunnel URL and\n// waits on one synchronous POST, and on 2026-11-20 Facebook dropped that\n// fetch of a 508 MB session at its 120s gateway timeout - twice, nothing\n// landed. Here n8n reads the render off the local server in the byte ranges\n// Facebook asks for and uploads each one (upload_phase start/transfer/finish).\n// So the file only has to be reachable from this machine: a\n// http://127.0.0.1:8765/... URL, or a tunnel URL, which is mapped back to it.\n// The server must honour Range - tools/range_server.py in\n// video-edit-automation; the stdlib http.server ignores it.\nconst LOCAL_ORIGIN = 'http://127.0.0.1:8765';\nconst localise = (u) => {\n  try {\n    const p = new URL(u);\n    if (/\\.trycloudflare\\.com$/.test(p.hostname)) return LOCAL_ORIGIN + p.pathname;\n    return u;\n  } catch (e) {\n    return u;\n  }\n};\nconst videoFetchUrl = localise(videoUrl);\nif (!/^http:\\/\\/(127\\.0\\.0\\.1|localhost):8765\\//.test(videoFetchUrl)) {\n  throw new Error(`videoUrl must be on the local publish server (127.0.0.1:8765) or its tunnel, got: ${videoUrl || '(empty)'}`);\n}\nif (!title) throw new Error('title is empty.');\n\n// Same trim as Publish Facebook Video: the first paragraph plus the link line,\n// because the caller passes the full YouTube description.\nfunction trimForFacebook(text) {\n  if (!text) return '';\n  const paragraphs = text.split(/\\n\\s*\\n/).map((p) => p.trim()).filter(Boolean);\n  const first = paragraphs[0] ?? '';\n  const lines = text.split('\\n').map((l) => l.trim());\n  const linkLine =\n    lines.find((l) => /^Full article:\\s*https?:\\/\\/\\S+/.test(l)) ??\n    lines.find((l) => /https?:\\/\\/\\S+/.test(l));\n  if (!linkLine || first.includes(linkLine)) return first;\n  return `${first}\\n\\n${linkLine}`;\n}\nconst description = trimForFacebook(rawDescription);\n\n// The cover is fetched as bytes and POSTed to /{id}/thumbnails - Facebook has\n// no URL-based cover parameter (see docs/publish/instagram-facebook.md).\nconst coverFetchUrl = thumbUrl ? localise(thumbUrl) : '';\n\nreturn [{ json: { videoFetchUrl, title, description, coverFetchUrl } }];"
+      },
+      "id": "13cc03cd-cc2c-4bd5-af59-a00a9a6b8706"
+    },
+    {
+      "name": "Probe Size",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        300
+      ],
+      "parameters": {
+        "method": "HEAD",
+        "url": "={{ $json.videoFetchUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "5eba07eb-a6a5-4f6f-a14b-e0ba477d1dbc"
+    },
+    {
+      "name": "FB Start",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph-video.facebook.com/v23.0/me/videos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "upload_phase",
+              "value": "start"
+            },
+            {
+              "name": "file_size",
+              "value": "={{ $json.headers['content-length'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "6a2feba5-4779-4d2d-b10a-824ab070c33c"
+    },
+    {
+      "name": "Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        600,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "done-offsets",
+              "leftValue": "={{ String($json.start_offset) }}",
+              "rightValue": "={{ String($json.end_offset) }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "267c3d6b-1016-42ee-963b-382ed4912bc1"
+    },
+    {
+      "name": "Next Range",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        500
+      ],
+      "parameters": {
+        "jsCode": "// Facebook names the next byte range in every start/transfer response, as\n// strings. The session id lives on FB Start's single run; runIndex 0 is pinned\n// so the reference cannot drift to a loop iteration.\nconst r = $input.first().json;\nconst start = Number(r.start_offset);\nconst end = Number(r.end_offset);\nif (!(end > start)) throw new Error(`Bad range from Facebook: ${JSON.stringify(r)}`);\nreturn [{ json: {\n  session: $('FB Start').first(0, 0).json.upload_session_id,\n  start,\n  end,\n  range: `bytes=${start}-${end - 1}`,\n  url: $('Normalise Input').first(0, 0).json.videoFetchUrl,\n} }];"
+      },
+      "id": "2731178f-6c7f-41a6-8c15-a90056b60f9a"
+    },
+    {
+      "name": "Fetch Chunk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        300
+      ],
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Range",
+              "value": "={{ $json.range }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "chunk"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 3000,
+      "id": "eb8c5a99-9801-43c8-ae50-9d89458ce39a"
+    },
+    {
+      "name": "FB Transfer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph-video.facebook.com/v23.0/me/videos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "upload_phase",
+              "value": "transfer"
+            },
+            {
+              "name": "upload_session_id",
+              "value": "={{ $('Next Range').first().json.session }}"
+            },
+            {
+              "name": "start_offset",
+              "value": "={{ $('Next Range').first().json.start }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "video_file_chunk",
+              "inputDataFieldName": "chunk"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 3000,
+      "id": "dd3cef50-0233-4a4a-bd4b-fb2b388e7792"
+    },
+    {
+      "name": "FB Finish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph-video.facebook.com/v23.0/me/videos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "upload_phase",
+              "value": "finish"
+            },
+            {
+              "name": "upload_session_id",
+              "value": "={{ $('FB Start').first(0, 0).json.upload_session_id }}"
+            },
+            {
+              "name": "title",
+              "value": "={{ $('Normalise Input').first(0, 0).json.title }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $('Normalise Input').first(0, 0).json.description }}"
+            },
+            {
+              "name": "published",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "id": "b54d3103-aaa2-480f-aac1-9f494482d720"
+    },
+    {
+      "name": "FB Fetch Cover",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        100
+      ],
+      "parameters": {
+        "url": "={{ $('Normalise Input').first(0, 0).json.coverFetchUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "cover"
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput",
+      "id": "a43c3a3d-e523-4072-9a9a-d7fdeccfc295"
+    },
+    {
+      "name": "FB Set Video Cover",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v23.0/{{ $('FB Start').first(0, 0).json.video_id }}/thumbnails",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "is_preferred",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "source",
+              "inputDataFieldName": "cover"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "ltfxXBWtUWu9wRg3",
+          "name": "Facebook Graph (TinnitusHelp)"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "id": "5f58a7e2-43b7-47db-9c72-0ae227b9dcf6"
+    },
+    {
+      "name": "Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        100
+      ],
+      "parameters": {
+        "jsCode": "// The cover nodes are continueRegularOutput: the video is already published\n// when they run, and a red execution would invite a re-run, which re-uploads\n// the whole video to the Page.\nlet facebookCoverSet = false;\ntry {\n  const c = $('FB Set Video Cover').first().json;\n  facebookCoverSet = c?.success === true || c?.id != null;\n} catch (e) {}\nreturn [{ json: {\n  facebookVideoId: $('FB Start').first(0, 0).json.video_id,\n  finished: $('FB Finish').first().json.success === true,\n  title: $('Normalise Input').first(0, 0).json.title,\n  fileSize: $('Normalise Input').first(0, 0).json.fileSize ?? null,\n  facebookCoverSet,\n} }];"
+      },
+      "id": "29c47c85-787b-480c-b559-607bd76f3336"
+    }
+  ],
+  "connections": {
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalise Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Input": {
+      "main": [
+        [
+          {
+            "node": "Probe Size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Probe Size": {
+      "main": [
+        [
+          {
+            "node": "FB Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Start": {
+      "main": [
+        [
+          {
+            "node": "Done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Next Range": {
+      "main": [
+        [
+          {
+            "node": "Fetch Chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Chunk": {
+      "main": [
+        [
+          {
+            "node": "FB Transfer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Transfer": {
+      "main": [
+        [
+          {
+            "node": "Done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Finish": {
+      "main": [
+        [
+          {
+            "node": "FB Fetch Cover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Fetch Cover": {
+      "main": [
+        [
+          {
+            "node": "FB Set Video Cover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Set Video Cover": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Done?": {
+      "main": [
+        [
+          {
+            "node": "FB Finish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Next Range",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodeGroups": [],
+  "sourceWorkflowId": null,
+  "tags": []
+}

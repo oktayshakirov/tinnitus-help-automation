@@ -5,7 +5,7 @@ description: Publish content to tinnitushelp.me - suggest topics, write the arti
 
 # Publish Content — Tinnitus Help
 
-Full agent loop: **suggest topics → user picks → Claude writes the article → quality gate → stage locally → fetch main-image candidates (user picks) → user reviews → push (deploy gate) → share → verify.**
+Full agent loop: **suggest topics → user picks → Claude writes the article → quality gate → backlinks from older articles → stage locally → fetch main-image candidates (user picks) → user reviews → push (deploy gate) → share → verify.**
 
 **Claude writes the articles; n8n posts them.** The New Post generation workflow is kept as a fallback but is not the path - see Step 2.
 
@@ -258,6 +258,57 @@ topic about tinnitus in culture rather than tinnitus in a body. On those posts
 `sources:` is optional (cite where a historical claim needs it); on every
 medical post it is mandatory.
 
+## Step 3c - Backlinks: link older articles to the new post
+
+A new post is an orphan until older articles link to it. Run, from anywhere:
+
+```
+python3 scripts/backlinks.py --target /blog/<slug>          # report
+python3 scripts/backlinks.py --target /blog/<slug> --apply  # write
+```
+
+(script dir is this skill's folder; it defaults to `~/Coding/tinnitus-blog`).
+It is a copy of the Crypto Wiki script - fix both when changing one.
+**Posts live at `/blog/<slug>` here, not `/posts/`** - the alias file's
+`url_prefix` maps the `content/posts` folder to `/blog`. The first run used
+`/posts/` paths, which the gate caught as invalid slugs on 20 files; the
+script also failed to see existing `/blog/` links as already linked.
+
+**A new post is only matched once it is in `scripts/link_aliases.json`.**
+Post titles are rarely written out in prose, so add the 1-3 phrases an
+article would actually use for the topic ("pulsatile tinnitus", "hyperacusis",
+"Ozempic"). Matching is case-insensitive by default; set `"ci": false` for
+acronyms that are also words. Avoid generic phrases: "exercise" was dropped
+because it matched "the whole exercise". When a match is the wrong sense in
+one article ("stress" in animals on tinnitus-in-wildlife), add that article's
+slug to the alias's `skip_files` so later sweeps do not re-add it.
+
+A full-site sweep (`backlinks.py --apply` with no `--target`) is worth running
+after a batch of new posts, or whenever the alias file grows.
+
+Rules the script enforces, so you do not have to re-check them by hand:
+one link per target per article, never a self-link, only in paragraph and
+list prose (never headings, quotes, tables, images, components or their
+props, existing links or bold spans), never a second link in a sentence that
+already has one, and it stops once an article reaches 15 internal links -
+the gate's upper bound. Articles already at 15 show as `CAPPED`; leave them.
+`REVIEW` matches are words with a second meaning (none listed yet): read the context, and if it really is the entity, re-run with
+`--target <path> --files <file> --approve-review --apply`.
+
+**Do not bump `updated` for backlink edits.** Adding a link is not a content
+revision, and moving `dateModified` on a dozen pages for that is noise.
+
+Then gate every older file it touched and compare against the file's own
+result before the edit - many older pages already fail checks the current
+gate added later (image counts, description length), and the job is "no new
+failures", not "fix every old page". Commit the edited older files together
+with the new page in Step 5.
+
+Why this exists: on 2026-11-20 the same sweep on Crypto Wiki found 223
+missing links across 103 articles; on tinnitushelp.me it found 35 across 21
+posts, since most posts here were already near the 15-link cap. New pages only ever linked *outward*; nothing went back
+and linked *in*, so every new page started as an orphan.
+
 ## Step 4 - Stage locally + pick the main image
 The MDX is already in `tinnitus-blog/content/posts/` from Step 2 - do NOT commit yet. (The old copy-from-the-automation-repo hop is gone.)
 
@@ -277,7 +328,7 @@ Site standard: posts ~800px wide JPG. The script already keeps every candidate <
 Then let the user review (offer dev server). Fold their feedback into `post_guidelines.md`/the workflow so the next run is right by default.
 
 ## Step 5 - Push (only on explicit approval)
-Commit post + ALL new images (check `git status` for untracked images - a missing image ships a broken page) to `tinnitus-blog`, push. Then **DEPLOY GATE**: poll the production article URL AND main-image URL until both return 200, using the exact hosts + path shapes from the **Production URLs** table at the top of this skill (`curl -sL`). If the first poll returns `000`, stop and fix the URL - that is a bad host, not a slow deploy. Never share before this passes - the banner generator fetches the main image from production (black-spot banner otherwise).
+Commit post + ALL new images (check `git status` for untracked images - a missing image ships a broken page) + every older article Step 3c edited to `tinnitus-blog`, push. Then **DEPLOY GATE**: poll the production article URL AND main-image URL until both return 200, using the exact hosts + path shapes from the **Production URLs** table at the top of this skill (`curl -sL`). If the first poll returns `000`, stop and fix the URL - that is a bad host, not a slow deploy. Never share before this passes - the banner generator fetches the main image from production (black-spot banner otherwise).
 
 ### Step 5b - Push notification (automatic)
 **Nothing to run.** The push to main triggers `.github/workflows/notify-new-content.yml`, which waits for the deployment to go live and then syncs to Firestore, which sends the notification. Check the repo's Actions tab to confirm the run went green - it takes a few minutes because it waits on the deploy.

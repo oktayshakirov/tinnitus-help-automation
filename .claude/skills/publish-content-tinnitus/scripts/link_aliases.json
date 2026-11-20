@@ -1,0 +1,460 @@
+{
+  "_comment": "Phrases backlinks.py looks for in body prose. tinnitushelp.me has posts only, and post titles are rarely written out in prose, so a post is only linked when it is listed here. Matching is case-insensitive unless an entry sets 'ci': false. 'review': report but never auto-apply. 'not_followed_by' / 'not_preceded_by': skip a match next to these words. Posts are served at /blog/<slug> on this site, not /posts/ - url_prefix maps the content folder to the URL. 'skip_files': article slugs where a match was reviewed and is the wrong sense.",
+  "default_ci": true,
+  "default_not_followed_by": [],
+  "url_prefix": {
+    "posts": "/blog"
+  },
+  "/blog/hyperacusis-and-tinnitus": {
+    "phrases": [
+      "hyperacusis"
+    ]
+  },
+  "/blog/menieres-disease-and-tinnitus": {
+    "phrases": [
+      "Meniere's disease",
+      "Ménière's disease",
+      "Meniere's",
+      "Ménière's"
+    ]
+  },
+  "/blog/musical-ear-syndrome": {
+    "phrases": [
+      "musical ear syndrome"
+    ]
+  },
+  "/blog/pulsatile-tinnitus-why-you-hear-your-heartbeat": {
+    "phrases": [
+      "pulsatile tinnitus"
+    ]
+  },
+  "/blog/somatic-tinnitus": {
+    "phrases": [
+      "somatic tinnitus",
+      "somatosensory tinnitus"
+    ]
+  },
+  "/blog/reactive-tinnitus": {
+    "phrases": [
+      "reactive tinnitus"
+    ]
+  },
+  "/blog/tinnitus-in-one-ear": {
+    "phrases": [
+      "tinnitus in one ear",
+      "one-sided tinnitus",
+      "unilateral tinnitus"
+    ]
+  },
+  "/blog/tinnitus-retraining-therapy": {
+    "phrases": [
+      "tinnitus retraining therapy",
+      "TRT"
+    ],
+    "ci": false
+  },
+  "/blog/cognitive-behavioral-therapy-and-tinnitus": {
+    "phrases": [
+      "cognitive behavioral therapy",
+      "cognitive behavioural therapy",
+      "CBT"
+    ],
+    "ci": false
+  },
+  "/blog/bimodal-neuromodulation-for-tinnitus": {
+    "phrases": [
+      "bimodal neuromodulation",
+      "Lenire"
+    ]
+  },
+  "/blog/hearing-aids-and-tinnitus": {
+    "phrases": [
+      "hearing aids",
+      "hearing aid"
+    ]
+  },
+  "/blog/sudden-hearing-loss-and-tinnitus": {
+    "phrases": [
+      "sudden sensorineural hearing loss",
+      "sudden hearing loss"
+    ]
+  },
+  "/blog/tinnitus-and-hearing-loss": {
+    "phrases": [
+      "hearing loss"
+    ],
+    "not_preceded_by": [
+      "sudden",
+      "Sudden",
+      "sensorineural"
+    ]
+  },
+  "/blog/ototoxic-medications-and-tinnitus": {
+    "phrases": [
+      "ototoxic medications",
+      "ototoxic drugs",
+      "ototoxic"
+    ]
+  },
+  "/blog/tmj-and-tinnitus-the-jaw-connection": {
+    "phrases": [
+      "temporomandibular joint",
+      "TMJ disorders",
+      "TMJ disorder",
+      "TMJ"
+    ]
+  },
+  "/blog/earwax-and-tinnitus": {
+    "phrases": [
+      "earwax",
+      "ear wax"
+    ]
+  },
+  "/blog/can-ear-infections-cause-tinnitus": {
+    "phrases": [
+      "ear infections",
+      "ear infection"
+    ]
+  },
+  "/blog/concussion-and-tinnitus": {
+    "phrases": [
+      "concussions",
+      "concussion"
+    ]
+  },
+  "/blog/migraine-and-tinnitus": {
+    "phrases": [
+      "migraines",
+      "migraine"
+    ]
+  },
+  "/blog/menopause-and-tinnitus": {
+    "phrases": [
+      "menopause"
+    ]
+  },
+  "/blog/blood-pressure-and-tinnitus": {
+    "phrases": [
+      "high blood pressure",
+      "hypertension",
+      "blood pressure"
+    ]
+  },
+  "/blog/tinnitus-and-diabetes-the-blood-sugar-link": {
+    "phrases": [
+      "diabetes"
+    ]
+  },
+  "/blog/caffeine-and-tinnitus": {
+    "phrases": [
+      "caffeine"
+    ]
+  },
+  "/blog/does-magnesium-help-tinnitus": {
+    "phrases": [
+      "magnesium"
+    ]
+  },
+  "/blog/ginkgo-biloba-and-tinnitus": {
+    "phrases": [
+      "ginkgo biloba",
+      "ginkgo"
+    ]
+  },
+  "/blog/vitamin-b12-deficiency-and-tinnitus": {
+    "phrases": [
+      "vitamin B12",
+      "B12"
+    ]
+  },
+  "/blog/taurine-and-tinnitus": {
+    "phrases": [
+      "taurine"
+    ]
+  },
+  "/blog/cbd-and-tinnitus": {
+    "phrases": [
+      "cannabidiol",
+      "CBD"
+    ],
+    "ci": false
+  },
+  "/blog/ozempic-and-tinnitus": {
+    "phrases": [
+      "Ozempic",
+      "semaglutide"
+    ]
+  },
+  "/blog/serotonin-and-tinnitus": {
+    "phrases": [
+      "serotonin"
+    ]
+  },
+  "/blog/do-antidepressants-make-tinnitus-worse": {
+    "phrases": [
+      "antidepressants",
+      "SSRIs"
+    ]
+  },
+  "/blog/tinnitus-and-sleep": {
+    "phrases": [
+      "sleep with tinnitus",
+      "sleeping with tinnitus",
+      "insomnia"
+    ]
+  },
+  "/blog/tinnitus-and-stress": {
+    "phrases": [
+      "stress"
+    ],
+    "not_followed_by": [
+      "-o-meter",
+      "o-meter"
+    ],
+    "skip_files": [
+      "tinnitus-in-wildlife"
+    ]
+  },
+  "/blog/tinnitus-and-anxiety-staying-mentally-strong": {
+    "phrases": [
+      "anxiety"
+    ],
+    "skip_files": [
+      "tinnitus-in-art"
+    ]
+  },
+  "/blog/tinnitus-impact-on-mental-health": {
+    "phrases": [
+      "mental health"
+    ]
+  },
+  "/blog/meditation-and-mindfulness-for-tinnitus": {
+    "phrases": [
+      "mindfulness",
+      "meditation"
+    ]
+  },
+  "/blog/brown-noise-vs-white-noise-for-tinnitus": {
+    "phrases": [
+      "brown noise",
+      "pink noise"
+    ]
+  },
+  "/blog/the-power-of-white-noise": {
+    "phrases": [
+      "white noise",
+      "sound masking"
+    ]
+  },
+  "/blog/can-silence-make-tinnitus-worse": {
+    "phrases": [
+      "complete silence"
+    ]
+  },
+  "/blog/noise-canceling-headphones-for-tinnitus": {
+    "phrases": [
+      "noise-canceling headphones",
+      "noise-cancelling headphones",
+      "noise canceling headphones",
+      "active noise cancellation"
+    ]
+  },
+  "/blog/airpods-and-tinnitus": {
+    "phrases": [
+      "AirPods"
+    ]
+  },
+  "/blog/tinnitus-after-a-concert": {
+    "phrases": [
+      "after a concert"
+    ]
+  },
+  "/blog/tinnitus-in-musicians": {
+    "phrases": [
+      "musicians"
+    ]
+  },
+  "/blog/tinnitus-and-military-veterans": {
+    "phrases": [
+      "military veterans",
+      "veterans"
+    ]
+  },
+  "/blog/tinnitus-in-children": {
+    "phrases": [
+      "children with tinnitus"
+    ]
+  },
+  "/blog/tinnitus-and-pregnancy": {
+    "phrases": [
+      "pregnancy"
+    ]
+  },
+  "/blog/tinnitus-and-allergies": {
+    "phrases": [
+      "allergies"
+    ]
+  },
+  "/blog/tinnitus-and-vaping": {
+    "phrases": [
+      "vaping"
+    ]
+  },
+  "/blog/the-impact-of-smoking-and-alcohol": {
+    "phrases": [
+      "smoking",
+      "alcohol"
+    ]
+  },
+  "/blog/how-artificial-sweeteners-may-affect-your-tinnitus": {
+    "phrases": [
+      "artificial sweeteners",
+      "aspartame"
+    ]
+  },
+  "/blog/hydration-and-tinnitus-the-importance-of-water-intake": {
+    "phrases": [
+      "dehydration"
+    ]
+  },
+  "/blog/tinnitus-and-air-travel": {
+    "phrases": [
+      "air travel"
+    ]
+  },
+  "/blog/why-does-tinnitus-spike": {
+    "phrases": [
+      "tinnitus spikes"
+    ]
+  },
+  "/blog/how-to-manage-a-tinnitus-spike": {
+    "phrases": [
+      "tinnitus spike"
+    ]
+  },
+  "/blog/tinnitus-trigger-tracking": {
+    "phrases": [
+      "trigger tracking",
+      "tinnitus diary",
+      "symptom diary"
+    ]
+  },
+  "/blog/tinnitus-and-genetics": {
+    "phrases": [
+      "genetics"
+    ]
+  },
+  "/blog/is-tinnitus-hereditary": {
+    "phrases": [
+      "hereditary"
+    ]
+  },
+  "/blog/did-beethoven-have-tinnitus": {
+    "phrases": [
+      "Beethoven"
+    ],
+    "ci": false
+  },
+  "/blog/did-van-gogh-have-tinnitus": {
+    "phrases": [
+      "Van Gogh",
+      "van Gogh"
+    ],
+    "ci": false
+  },
+  "/blog/celebrities-with-tinnitus": {
+    "phrases": [
+      "celebrities"
+    ]
+  },
+  "/blog/best-tinnitus-apps": {
+    "phrases": [
+      "tinnitus apps",
+      "tinnitus app"
+    ]
+  },
+  "/blog/how-audiologists-diagnose-and-treat-tinnitus": {
+    "phrases": [
+      "audiologists",
+      "audiologist"
+    ]
+  },
+  "/blog/tinnitus-guideline-2026": {
+    "phrases": [
+      "clinical guidelines",
+      "clinical guideline"
+    ]
+  },
+  "/blog/the-impact-of-noise-pollution-on-tinnitus": {
+    "phrases": [
+      "noise pollution"
+    ]
+  },
+  "/blog/the-gamers-guide-to-preventing-tinnitus": {
+    "phrases": [
+      "gamers",
+      "gaming"
+    ]
+  },
+  "/blog/digital-detox-for-tinnitus": {
+    "phrases": [
+      "digital detox",
+      "screen time"
+    ]
+  },
+  "/blog/tinnitus-statistics-how-many-are-affected": {
+    "phrases": [
+      "tinnitus statistics"
+    ]
+  },
+  "/blog/what-role-does-the-brain-play-in-tinnitus": {
+    "phrases": [
+      "auditory cortex"
+    ]
+  },
+  "/blog/the-role-of-neural-pathways-in-tinnitus-perception": {
+    "phrases": [
+      "neural pathways"
+    ]
+  },
+  "/blog/can-neck-tension-cause-tinnitus": {
+    "phrases": [
+      "neck tension",
+      "neck pain"
+    ]
+  },
+  "/blog/the-finger-drumming-trick-for-tinnitus": {
+    "phrases": [
+      "finger drumming",
+      "finger-drumming"
+    ]
+  },
+  "/blog/youth-and-tinnitus": {
+    "phrases": [
+      "young adults"
+    ]
+  },
+  "/blog/ear-piercings-and-tinnitus": {
+    "phrases": [
+      "ear piercings",
+      "ear piercing"
+    ]
+  },
+  "/blog/tinnitus-and-the-pandemic": {
+    "phrases": [
+      "COVID-19",
+      "COVID"
+    ],
+    "ci": false
+  },
+  "/blog/new-tinnitus-what-to-do-first-week": {
+    "phrases": [
+      "new tinnitus"
+    ]
+  },
+  "/blog/managing-tinnitus": {
+    "phrases": [
+      "managing tinnitus"
+    ]
+  }
+}

@@ -375,6 +375,10 @@
     "tinnitus-guideline-2026": {
       "slug": "tinnitus-guideline-2026",
       "title": "Tinnitus Guideline 2026"
+    },
+    "acoustic-neuroma-and-tinnitus": {
+      "slug": "acoustic-neuroma-and-tinnitus",
+      "title": "Acoustic Neuroma and Tinnitus"
     }
   },
   "zen": {
@@ -417,7 +421,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 47,
+    "blog": 48,
     "zen": 1
   }
 }

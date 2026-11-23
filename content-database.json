@@ -379,6 +379,10 @@
     "acoustic-neuroma-and-tinnitus": {
       "slug": "acoustic-neuroma-and-tinnitus",
       "title": "Acoustic Neuroma and Tinnitus"
+    },
+    "can-a-cold-cause-tinnitus": {
+      "slug": "can-a-cold-cause-tinnitus",
+      "title": "Can a Cold Cause Tinnitus?"
     }
   },
   "zen": {
@@ -421,7 +425,7 @@
   },
   "aliases": {},
   "next_orders": {
-    "blog": 48,
+    "blog": 49,
     "zen": 1
   }
 }
